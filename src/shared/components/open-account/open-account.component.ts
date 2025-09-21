@@ -1,4 +1,5 @@
-import { Component, input } from "@angular/core";
+import { Component, inject, input } from "@angular/core";
+import { AuthStore } from "../../stores/auth.store";
 
 @Component({
   selector: "app-open-account",
@@ -9,6 +10,7 @@ import { Component, input } from "@angular/core";
 export class OpenAccountComponent {
   padding = input<string | number | null>(null);
   hasArrow = input<boolean>(false);
+  modal = inject(AuthStore);
 
   normalizePadding(pad: string | number | null): string | null {
     if (pad == null) return null;

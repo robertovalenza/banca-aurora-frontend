@@ -1,0 +1,197 @@
+/* Backdrop scuro */
+.fixed-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  animation: fade-in 180ms ease-out;
+}
+
+/* Contenitore centratore */
+.fixed-center {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  animation: fade-in 180ms ease-out;
+}
+
+/* Dialog */
+.dialog {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  color: #111827; /* gray-900 */
+  border-radius: 16px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+  outline: none;
+  padding: 24px;
+  transform-origin: center;
+  animation: pop-in 180ms ease-out;
+}
+
+/* Header dialog */
+.dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dialog__title {
+  margin: 0;
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600;
+  color: #111827;
+}
+
+.dialog__close {
+  background: transparent;
+  border: 0;
+  font-size: 20px;
+  color: #6b7280; /* gray-500 */
+  cursor: pointer;
+}
+.dialog__close:hover {
+  color: #374151;
+} /* gray-700 */
+
+/* Form */
+.form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.form label {
+  display: grid;
+  gap: 6px;
+}
+
+.form label > span {
+  font-size: 0.875rem; /* 14px */
+  color: #374151; /* gray-700 */
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  border-radius: 10px;
+  outline: none;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+  background: #fff;
+  color: #111827;
+}
+
+.input:focus {
+  border-color: #3b82f6; /* blue-500 */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Campo password con bottone mostra/nascondi */
+.input--with-toggle {
+  padding-right: 48px;
+}
+
+.input-toggle {
+  position: absolute;
+  inset: 0;
+  left: auto;
+  right: 8px;
+  width: 40px;
+  display: grid;
+  place-items: center;
+  color: #6b7280;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.input-toggle:hover {
+  color: #374151;
+}
+
+/* Errori */
+.input.ng-invalid.ng-touched {
+  border-color: #ef4444; /* red-500 */
+}
+.error {
+  font-size: 0.75rem;
+  color: #dc2626; /* red-600 */
+}
+
+/* Checkbox riga */
+.row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.row span {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+/* Pulsante principale */
+.btn-primary {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 0;
+  background: #2563eb; /* blue-600 */
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, opacity 120ms ease;
+}
+.btn-primary:hover {
+  background: #1d4ed8;
+} /* blue-700 */
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Footer link */
+.footer {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+.link {
+  color: #2563eb;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+/* Animazioni */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
