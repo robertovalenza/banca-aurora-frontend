@@ -1,7 +1,7 @@
 :host {
   --glitter: url("https://assets.codepen.io/13471/silver-glitter-background.png");
   --duration: 6.66s;
-  --card-width: 400px;
+  --card-width: 320px;
   --glow-c1: #ffd166;
   --glow-c2: #7bdff2;
   --glow-c3: #f78acb;
@@ -140,7 +140,7 @@
 .number {
   font-family: PT Mono, monospace;
   text-align: center;
-  font-size: clamp(18px, 8cqw, 24px);
+  font-size: clamp(18px, 8cqw, 21px);
   letter-spacing: clamp(0.5px, 0.25cqw, 2px);
   top: 60%;
   bottom: auto;
