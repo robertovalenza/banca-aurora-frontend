@@ -4,6 +4,8 @@ import {
   ApiResponse,
   LoginRequest,
   LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
 } from "../interfaces/api";
 import {
   HttpClient,
@@ -108,7 +110,6 @@ export class HttpService {
       if (!access_token) {
         return Promise.reject({
           status: 500,
-          data: { message: "Token assente nella risposta di login" } as any,
         });
       }
 
@@ -137,6 +138,75 @@ export class HttpService {
 
       console.error("Login failed:", e);
       this.loader.presentAlert("Errore", "Login non riuscito");
+
+      return Promise.reject({ status, data: { message } as any });
+    } finally {
+      this.loader.hideLoading();
+    }
+  }
+
+  async handleRegister(
+    body: RegisterRequest
+  ): Promise<ApiResponse<RegisterResponse>> {
+    if (
+      !body.username ||
+      !body.email ||
+      !body.password ||
+      !body.firstName ||
+      !body.lastName
+    ) {
+      return Promise.reject({
+        status: 400,
+        data: { message: "Campi di registrazione mancanti" } as any,
+      });
+    }
+    this.loader.showLoading("Registrazione in corso...");
+
+    try {
+      const res = await this.apiRequest<RegisterResponse>({
+        method: "POST",
+        endpoint: environment.Register,
+        body,
+        hasToken: false,
+      });
+
+      if (res.data?.access_token) {
+        const accessToken = res.data.access_token;
+        const refreshToken = res.data.refresh_token;
+        const tokenType = res.data.token_type || "Bearer";
+        const expiresIn = res.data.expires_in;
+
+        const expFromJwtMs = this.getExpiryFromJwt(accessToken);
+        const expiresAtMs =
+          expFromJwtMs ??
+          (typeof expiresIn === "number"
+            ? Date.now() + expiresIn * 1000
+            : null);
+
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("tokenType", tokenType);
+        if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+        if (expiresAtMs)
+          localStorage.setItem("tokenExpiry", String(expiresAtMs));
+      }
+
+      return res;
+    } catch (err) {
+      const e = err as HttpErrorResponse | any;
+
+      const status = e?.status ?? 0;
+      const message =
+        e?.error?.message ||
+        e?.message ||
+        (status === 0
+          ? "Impossibile contattare il server"
+          : "Registrazione fallita");
+
+      console.error("Registration failed:", e);
+      this.loader.presentAlert(
+        "Errore",
+        `Registrazione non riuscita: ${message}`
+      );
 
       return Promise.reject({ status, data: { message } as any });
     } finally {

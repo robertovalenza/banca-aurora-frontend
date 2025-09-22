@@ -17,6 +17,7 @@ export class ModalRegisterComponent {
   showPassword = signal(false);
 
   form = this.fb.nonNullable.group({
+    username: ["", [Validators.required, Validators.minLength(3)]],
     nome: ["", [Validators.required]],
     cognome: ["", [Validators.required]],
     email: ["", [Validators.required, Validators.email]],
@@ -24,14 +25,25 @@ export class ModalRegisterComponent {
   });
 
   private readonly eff = effect(() => {
+    const open = this.auth.loginOpen();
     document.body.style.overflow =
-      this.auth.loginOpen() || this.auth.registerOpen() ? "hidden" : "";
+      open || this.auth.registerOpen() ? "hidden" : "";
+    if (!open) {
+      this.form.reset({
+        username: "",
+        password: "",
+      });
+      this.showPassword.set(false);
+    }
   });
 
   constructor() {
     this.destroyRef.onDestroy(() => this.eff.destroy());
   }
 
+  get username() {
+    return this.form.controls.username;
+  }
   get nome() {
     return this.form.controls.nome;
   }
@@ -49,11 +61,19 @@ export class ModalRegisterComponent {
     this.showPassword.update((v) => !v);
   }
 
-  submit() {
-    if (this.form.invalid) {
+  async submit() {
+    if (this.form.invalid || this.auth.loading()) {
       this.form.markAllAsTouched();
       return;
     }
-    this.auth.closeAll();
+    const v = this.form.getRawValue();
+
+    await this.auth.register({
+      username: v.username,
+      email: v.email,
+      password: v.password,
+      firstName: v.nome,
+      lastName: v.cognome,
+    });
   }
 }

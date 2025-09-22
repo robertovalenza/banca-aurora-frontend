@@ -1,7 +1,6 @@
-<!-- modal-register.component.html -->
 @if (auth.registerOpen()) {
 <div
-  class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+  class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm cursor-pointer"
   (click)="auth.closeAll()"
 ></div>
 
@@ -29,6 +28,25 @@
 
     <form class="mt-4 grid gap-4" [formGroup]="form" (ngSubmit)="submit()">
       <label class="grid gap-1">
+        <span class="text-sm text-gray-700">Username</span>
+        <input
+          type="text"
+          formControlName="username"
+          autocomplete="username"
+          class="w-full rounded-lg border px-3 py-2 outline-none focus:ring [ &.ng-invalid.ng-touched ]:border-red-500"
+        />
+        @if (username.touched && username.invalid) {
+        <span class="text-xs text-red-600">
+          {{
+            username.hasError("required")
+              ? "Username obbligatorio"
+              : "Minimo 3 caratteri"
+          }}
+        </span>
+        }
+      </label>
+
+      <label class="grid gap-1">
         <span class="text-sm text-gray-700">Nome</span>
         <input
           type="text"
@@ -51,7 +69,7 @@
         <input
           type="email"
           formControlName="email"
-          autocomplete="username"
+          autocomplete="email"
           class="w-full rounded-lg border px-3 py-2 outline-none focus:ring [ &.ng-invalid.ng-touched ]:border-red-500"
         />
       </label>
@@ -78,9 +96,9 @@
       <button
         type="submit"
         class="mt-2 rounded-xl bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
-        [disabled]="form.invalid"
+        [disabled]="form.invalid || auth.loading()"
       >
-        Crea account
+        {{ auth.loading() ? "Creazione…" : "Crea account" }}
       </button>
     </form>
 

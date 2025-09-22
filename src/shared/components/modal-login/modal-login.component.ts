@@ -24,8 +24,16 @@ export class ModalLoginComponent {
   });
 
   private readonly eff = effect(() => {
+    const open = this.auth.loginOpen();
     document.body.style.overflow =
-      this.auth.loginOpen() || this.auth.registerOpen() ? "hidden" : "";
+      open || this.auth.registerOpen() ? "hidden" : "";
+    if (!open) {
+      this.form.reset({
+        username: "",
+        password: "",
+      });
+      this.showPassword.set(false);
+    }
   });
 
   constructor() {

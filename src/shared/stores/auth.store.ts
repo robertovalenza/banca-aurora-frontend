@@ -1,5 +1,6 @@
 import { Injectable, signal } from "@angular/core";
 import { HttpService } from "../services/http.service";
+import { RegisterRequest } from "../interfaces/api";
 
 @Injectable({ providedIn: "root" })
 export class AuthStore {
@@ -59,6 +60,30 @@ export class AuthStore {
         e?.data?.message ||
         e?.message ||
         "Accesso non riuscito. Controlla le credenziali o riprova più tardi.";
+      this._error.set(msg);
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  async register(req: RegisterRequest): Promise<void> {
+    this._error.set(null);
+    this._loading.set(true);
+    try {
+      const res = await this.http.handleRegister(req);
+
+      if (!res.data?.access_token) {
+        await this.http.handleLogin({
+          username: req.username,
+          password: req.password,
+        });
+      }
+      this.closeAll();
+    } catch (e: any) {
+      const msg =
+        e?.data?.message ||
+        e?.message ||
+        "Registrazione non riuscita. Riprova più tardi.";
       this._error.set(msg);
     } finally {
       this._loading.set(false);

@@ -25,3 +25,21 @@ export interface LoginResponse {
   session_state?: string;
   scope?: string;
 }
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface RegisterResponse {
+  id?: string | number;
+  user?: any;
+  access_token?: string;
+  refresh_token?: string;
+  token_type?: string;
+  expires_in?: number;
+  message?: string;
+}

@@ -31,6 +31,7 @@
   justify-content: space-between;
   align-items: center;
 }
+
 .ml-close {
   background: transparent;
   border: 0;
@@ -43,20 +44,24 @@
   gap: 12px;
   margin-top: 12px;
 }
+
 .ml-form label {
   display: grid;
   gap: 6px;
 }
+
 .ml-form input {
   padding: 10px 12px;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   outline: none;
 }
+
 .ml-form input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
+
 .ml-primary {
   margin-top: 8px;
   padding: 10px 14px;
@@ -67,6 +72,7 @@
   font-weight: 600;
   cursor: pointer;
 }
+
 .ml-primary:hover {
   background: #1d4ed8;
 }
