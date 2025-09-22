@@ -1,12 +1,20 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from "@angular/core";
+import { RouterOutlet } from "@angular/router";
+import { AlertHostComponent } from "../shared/components/alert-host/alert-host.component";
+import { LoadingOverlayComponent } from "../shared/components/loading-overlay/loading-overlay.component";
+import { UnauthorizedComponent } from "../shared/components/unauthorized/unauthorized.component";
 
 @Component({
-  selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  selector: "app-root",
+  imports: [
+    RouterOutlet,
+    AlertHostComponent,
+    LoadingOverlayComponent,
+    UnauthorizedComponent,
+  ],
+  templateUrl: "./app.component.html",
+  styleUrl: "./app.component.scss",
 })
 export class AppComponent {
-  title = 'banca-aurora';
+  title = "banca-aurora";
 }

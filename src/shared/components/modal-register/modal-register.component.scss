@@ -1,0 +1,219 @@
+.fixed-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  animation: fade-in 180ms ease-out;
+}
+
+.fixed-center {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  animation: fade-in 180ms ease-out;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 16px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+  outline: none;
+  padding: 24px;
+  transform-origin: center;
+  animation: pop-in 180ms ease-out;
+}
+
+.dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dialog__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.dialog__close {
+  background: transparent;
+  border: 0;
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+}
+.dialog__close:hover {
+  color: #374151;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.form label {
+  display: grid;
+  gap: 6px;
+}
+
+.form label > span {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  outline: none;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+  background: #fff;
+  color: #111827;
+}
+
+.input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.input--with-toggle {
+  padding-right: 48px;
+}
+
+.input-toggle {
+  position: absolute;
+  inset: 0;
+  left: auto;
+  right: 8px;
+  width: 40px;
+  display: grid;
+  place-items: center;
+  color: #6b7280;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.input-toggle:hover {
+  color: #374151;
+}
+
+.input.ng-invalid.ng-touched {
+  border-color: #ef4444;
+}
+.error {
+  font-size: 0.75rem;
+  color: #dc2626;
+}
+
+.row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.row span {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.btn-primary {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 0;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, opacity 120ms ease;
+}
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.footer {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+.link {
+  color: #2563eb;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+:host ::ng-deep .bg-zinc-900 input,
+:host ::ng-deep .bg-zinc-900 textarea,
+:host ::ng-deep .bg-zinc-900 select {
+  background-color: #09090b;
+  color: #fafafa;
+  border-color: #3f3f46;
+  caret-color: #fafafa;
+}
+
+:host ::ng-deep input:-webkit-autofill,
+:host ::ng-deep input:-webkit-autofill:hover,
+:host ::ng-deep input:-webkit-autofill:focus,
+:host ::ng-deep textarea:-webkit-autofill,
+:host ::ng-deep select:-webkit-autofill {
+  -webkit-text-fill-color: #fafafa !important;
+  caret-color: #fafafa !important;
+  box-shadow: 0 0 0 1000px #09090b inset !important;
+  border: 1px solid #3f3f46 !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+:host ::ng-deep input:autofill,
+:host ::ng-deep textarea:autofill,
+:host ::ng-deep select:autofill {
+  -webkit-text-fill-color: #fafafa;
+  caret-color: #fafafa;
+  box-shadow: 0 0 0 1000px #09090b inset;
+  border-color: #3f3f46;
+}
+
+:host ::ng-deep ::placeholder {
+  color: #71717a;
+}

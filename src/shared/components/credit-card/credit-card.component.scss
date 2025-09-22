@@ -1,0 +1,361 @@
+:host {
+  --glitter: url("https://assets.codepen.io/13471/silver-glitter-background.png");
+  --duration: 6.66s;
+  --card-width: 320px;
+  --glow-c1: #ffd166;
+  --glow-c2: #7bdff2;
+  --glow-c3: #f78acb;
+  --glow-strength: 0.55;
+  --edge-spread: 26px;
+  --edge-blur: 28px;
+  --edge-strength: 1;
+  --edge-bias: 0.35;
+  display: block;
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+  color: white;
+  font-family: "Heebo", sans-serif;
+}
+
+.sr-only {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ccs-app {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  perspective: 1000px;
+  overflow: hidden;
+  padding: 24px;
+}
+
+.card-front {
+  isolation: isolate;
+  position: relative;
+  display: grid;
+  transform: translate3d(0, 0, 0.01px);
+  width: var(--card-width);
+  height: auto;
+  container-type: inline-size;
+  aspect-ratio: 3/2;
+  border-radius: 3.5% / 5%;
+  --card-bg: url(https://simey-credit-card.netlify.app/img/bgs/default.jpg);
+  background-image: var(--card-bg);
+  background-size: cover;
+  background-position: 50% 50%;
+  box-shadow: 0 30px 40px -25px rgba(15, 5, 20, 1),
+    0 20px 50px -15px rgba(15, 5, 20, 1);
+  overflow: hidden;
+  image-rendering: optimizequality;
+  animation: tilt var(--duration) ease infinite,
+    glow-pulse var(--duration) ease-in-out infinite;
+}
+
+.card-front:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translate3d(0, 0, 0.01px);
+  background-image: var(--glitter), var(--glitter),
+    linear-gradient(120deg, black 25%, white, black 75%);
+  background-size: 100% 100%, 80% 80%, 200% 200%;
+  background-blend-mode: multiply, multiply, overlay;
+  background-position: 50% 50%, 50% 50%, 50% 50%;
+  mix-blend-mode: color-dodge;
+  filter: brightness(2) contrast(0.8);
+  animation: bg var(--duration) ease infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.card-front:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 0.1%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  background-size: 200% 200%;
+  mix-blend-mode: hard-light;
+  animation: bg var(--duration) ease infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.card-front * {
+  font-family: PT Mono, monospace;
+}
+
+.cardLogo,
+.expiry,
+.name,
+.number,
+.chip {
+  color: #ccc;
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+  inset: 5%;
+  text-shadow: -1px -1px 0px rgba(255, 255, 255, 0.5),
+    1px -1px 0px rgba(255, 255, 255, 0.5), 1px 1px 0px rgba(0, 0, 0, 0.5),
+    1px -1px 0px rgba(0, 0, 0, 0.5);
+  z-index: 5;
+}
+
+.name,
+.number,
+.expiry {
+  background-image: linear-gradient(to bottom, #ededed 20%, #bababa 70%),
+    linear-gradient(
+      120deg,
+      transparent 10%,
+      white 40%,
+      white 60%,
+      transparent 90%
+    );
+  background-size: cover, 200%;
+  background-position: 50% 50%;
+  background-blend-mode: overlay;
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  animation: bg var(--duration) ease infinite;
+}
+
+.cardLogo,
+.expiry,
+.name {
+  font-size: clamp(12px, 4cqw, 22px);
+}
+
+.number {
+  font-family: PT Mono, monospace;
+  text-align: center;
+  font-size: clamp(18px, 8cqw, 21px);
+  letter-spacing: clamp(0.5px, 0.25cqw, 2px);
+  top: 60%;
+  bottom: auto;
+}
+
+.expiry,
+.name {
+  top: auto;
+}
+
+.name {
+  right: auto;
+  max-width: 45cqw;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.expiry {
+  left: auto;
+}
+
+.cardLogo {
+  bottom: auto;
+  left: auto;
+  width: 15%;
+  filter: invert(1) saturate(0) brightness(1) contrast(1.2);
+  mix-blend-mode: screen;
+}
+
+.chip {
+  display: grid;
+  place-items: center;
+  width: 14%;
+  aspect-ratio: 5/4;
+  left: 10%;
+  top: 30%;
+  border-radius: 10% / 15%;
+  background-image: linear-gradient(
+    120deg,
+    #777 10%,
+    #ddd 40%,
+    #ddd 60%,
+    #777 90%
+  );
+  background-size: 200% 200%;
+  background-position: 50% 50%;
+  overflow: hidden;
+  animation: bg var(--duration) ease infinite;
+}
+
+.chip svg {
+  display: block;
+  width: 90%;
+  fill: none;
+  stroke: #444;
+  stroke-width: 2;
+}
+
+.contactless {
+  position: absolute;
+  left: 23%;
+  top: 29.5%;
+  width: 12%;
+}
+
+.contactless svg {
+  rotate: 90deg;
+  stroke-width: 1.25;
+  stroke: white;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.5;
+}
+
+.card-front .edge-glow {
+  position: absolute;
+  inset: calc(-1 * var(--edge-spread));
+  border-radius: inherit;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--card-bg);
+  background-size: inherit;
+  background-position: inherit;
+  background-repeat: no-repeat;
+  filter: blur(var(--edge-blur)) saturate(1.1) brightness(1.08);
+  opacity: var(--edge-strength);
+  mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - var(--edge-spread)),
+    black calc(100% - max(2px, var(--edge-spread) - 1px))
+  );
+  -webkit-mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - var(--edge-spread)),
+    black calc(100% - max(2px, var(--edge-spread) - 1px))
+  );
+  animation: edge-breath var(--duration) ease-in-out infinite;
+}
+
+.card-front .edge-glow-left,
+.card-front .edge-glow-right {
+  position: absolute;
+  inset: calc(-1 * var(--edge-spread));
+  border-radius: inherit;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--card-bg);
+  background-size: inherit;
+  background-position: inherit;
+  background-repeat: no-repeat;
+  filter: blur(calc(var(--edge-blur) + 6px)) saturate(1.15) brightness(1.12);
+  opacity: calc(var(--edge-strength) * 0.9);
+  mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - var(--edge-spread)),
+    black calc(100% - max(2px, var(--edge-spread) - 1px))
+  );
+  -webkit-mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - var(--edge-spread)),
+    black calc(100% - max(2px, var(--edge-spread) - 1px))
+  );
+}
+
+.card-front .edge-glow-left {
+  -webkit-mask: radial-gradient(
+      closest-side,
+      transparent calc(100% - var(--edge-spread)),
+      black calc(100% - max(2px, var(--edge-spread) - 1px))
+    ),
+    linear-gradient(
+      90deg,
+      black max(0%, 35% - (var(--edge-bias) * 100%)),
+      transparent 60%
+    );
+  animation: hot-left var(--duration) ease-in-out infinite;
+}
+
+.card-front .edge-glow-right {
+  -webkit-mask: radial-gradient(
+      closest-side,
+      transparent calc(100% - var(--edge-spread)),
+      black calc(100% - max(2px, var(--edge-spread) - 1px))
+    ),
+    linear-gradient(
+      270deg,
+      black max(0%, 35% - (var(--edge-bias) * 100%)),
+      transparent 60%
+    );
+  animation: hot-right var(--duration) ease-in-out infinite;
+}
+
+@keyframes tilt {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0.01px) rotateY(-20deg) rotateX(5deg);
+  }
+  50% {
+    transform: translate3d(0, 0, 0.01px) rotateY(20deg) rotateX(5deg);
+  }
+}
+
+@keyframes bg {
+  0%,
+  100% {
+    background-position: 50% 50%, calc(50% + 1px) calc(50% + 1px), 0% 50%;
+  }
+  50% {
+    background-position: 50% 50%, calc(50% - 1px) calc(50% - 1px), 100% 50%;
+  }
+}
+
+@keyframes edge-breath {
+  0%,
+  100% {
+    filter: blur(calc(var(--edge-blur) - 2px)) saturate(1.05) brightness(1.05);
+    opacity: calc(var(--edge-strength) * 0.9);
+  }
+  50% {
+    filter: blur(calc(var(--edge-blur) + 2px)) saturate(1.12) brightness(1.12);
+    opacity: calc(var(--edge-strength) * 1);
+  }
+}
+
+@keyframes hot-left {
+  0%,
+  100% {
+    opacity: calc(var(--edge-strength) * 1);
+  }
+  50% {
+    opacity: calc(var(--edge-strength) * 0.35);
+  }
+}
+
+@keyframes hot-right {
+  0%,
+  100% {
+    opacity: calc(var(--edge-strength) * 0.35);
+  }
+  50% {
+    opacity: calc(var(--edge-strength) * 1);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 30px 40px -25px rgba(15, 5, 20, 1),
+      0 20px 50px -15px rgba(15, 5, 20, 1),
+      -12px 0 42px -10px color-mix(in oklab, var(--glow-c1), transparent 65%);
+  }
+  50% {
+    box-shadow: 0 30px 40px -25px rgba(15, 5, 20, 1),
+      0 20px 50px -15px rgba(15, 5, 20, 1),
+      12px 0 46px -10px color-mix(in oklab, var(--glow-c2), transparent 65%);
+  }
+}

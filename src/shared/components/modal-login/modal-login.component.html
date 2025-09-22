@@ -1,0 +1,109 @@
+@if (auth.loginOpen()) {
+<div
+  class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+  (click)="auth.closeAll()"
+></div>
+
+<div
+  class="fixed inset-0 z-50 grid place-items-center px-4"
+  (keydown.escape)="auth.closeAll()"
+>
+  <div
+    cdkTrapFocus
+    role="dialog"
+    aria-modal="true"
+    class="w-full max-w-md rounded-2xl bg-zinc-900 border border-zinc-800 p-6 shadow-2xl outline-none"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-start justify-between gap-4">
+      <h2 class="text-lg font-semibold text-zinc-100">Accedi</h2>
+      <button
+        class="text-zinc-400 hover:text-zinc-200"
+        (click)="auth.closeAll()"
+        aria-label="Chiudi"
+      >
+        ✕
+      </button>
+    </div>
+
+    @if (auth.error()) {
+    <div
+      class="mt-3 rounded-lg border border-red-800/60 bg-red-900/30 px-3 py-2 text-sm text-red-300"
+    >
+      {{ auth.error() }}
+    </div>
+    }
+
+    <form class="mt-4 grid gap-4" [formGroup]="form" (ngSubmit)="submit()">
+      <label class="grid gap-1">
+        <span class="text-sm text-zinc-300">Username</span>
+        <input
+          cdkFocusInitial
+          type="text"
+          formControlName="username"
+          class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 placeholder-zinc-500 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
+          placeholder="Nome utente"
+          autocomplete="username"
+        />
+        @if (username.touched && username.invalid) {
+        <span class="text-xs text-red-400">
+          {{
+            username.hasError("required")
+              ? "Username obbligatorio"
+              : "Minimo 3 caratteri"
+          }}
+        </span>
+        }
+      </label>
+
+      <div class="grid gap-1">
+        <label class="text-sm text-zinc-300">Password</label>
+        <div class="relative">
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 pr-12 text-zinc-100 placeholder-zinc-500 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
+            placeholder="Min. 8 caratteri"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="absolute inset-y-0 right-2 my-auto px-2 text-sm text-zinc-400 hover:text-zinc-200"
+            (click)="togglePassword()"
+            [attr.aria-pressed]="showPassword()"
+          >
+            {{ showPassword() ? "Nascondi" : "Mostra" }}
+          </button>
+        </div>
+        @if (password.touched && password.invalid) {
+        <span class="text-xs text-red-400">
+          {{
+            password.hasError("required")
+              ? "Password obbligatoria"
+              : "Minimo 8 caratteri"
+          }}
+        </span>
+        }
+      </div>
+
+      <button
+        type="submit"
+        class="mt-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+        [disabled]="form.invalid || auth.loading()"
+      >
+        {{ auth.loading() ? "Accesso…" : "Accedi" }}
+      </button>
+    </form>
+
+    <div class="mt-4 flex items-center justify-end text-sm">
+      <button
+        type="button"
+        class="text-blue-400 hover:underline"
+        (click)="auth.openRegister()"
+      >
+        Registrati
+      </button>
+    </div>
+  </div>
+</div>
+}

@@ -1,0 +1,13 @@
+.container {
+  background-color: #201c25;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.description {
+  display: inline-block;
+  max-width: 14ch;
+  text-wrap: balance;
+  line-height: 1.1;
+  text-align: center;
+}
