@@ -4,6 +4,7 @@ export const environment = {
   Login: "/auth/login",
   Register: "/auth/register",
   Logout: "/auth/logout",
+  RefreshToken: "/auth/refresh",
   GetOwnCustomerData: "/customers/GetOwnCustomerData",
   CreateCustomer: "/customers/CreateCustomer",
   UpdateIncomeMonthly: "/customers/UpdateIncomeMonthly",

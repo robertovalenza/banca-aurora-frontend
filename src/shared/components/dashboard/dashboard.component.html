@@ -37,7 +37,6 @@
         aria-label="Logout"
         title="Logout"
       >
-        <!-- icona power (inline SVG) -->
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-6 w-6"
@@ -62,12 +61,10 @@
     (closed)="onIncomeClosed()"
     (updated)="onIncomeUpdated($event)"
   ></app-update-income-modal>
-  <!-- ...tuo layout... -->
   <app-loan-request-modal
     [open]="requestOpen()"
     (closed)="onModalClosed()"
   ></app-loan-request-modal>
-
   <app-create-customer-modal
     [open]="createCustomerOpen()"
     (closed)="onCreateClosed()"

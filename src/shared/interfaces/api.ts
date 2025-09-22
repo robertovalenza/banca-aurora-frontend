@@ -134,3 +134,15 @@ export interface ILogoutRequest {
 export interface ILogoutResponse {
   message?: string;
 }
+
+export interface IUpdateTokenRequest {
+  refreshToken: string;
+}
+
+export interface IUpdateTokenResponse {
+  access_token: string;
+  expires_in?: number;
+  refresh_token?: string;
+  token_type?: string;
+  refresh_expires_in?: number;
+}

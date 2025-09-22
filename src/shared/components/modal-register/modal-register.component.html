@@ -1,6 +1,6 @@
 @if (auth.registerOpen()) {
 <div
-  class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm cursor-pointer"
+  class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
   (click)="auth.closeAll()"
 ></div>
 
@@ -12,13 +12,13 @@
     cdkTrapFocus
     role="dialog"
     aria-modal="true"
-    class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl outline-none"
+    class="w-full max-w-md rounded-2xl bg-zinc-900 border border-zinc-800 p-6 shadow-2xl outline-none"
     (click)="$event.stopPropagation()"
   >
     <div class="flex items-start justify-between gap-4">
-      <h2 class="text-xl font-semibold text-gray-900">Registrati</h2>
+      <h2 class="text-lg font-semibold text-zinc-100">Registrati</h2>
       <button
-        class="text-gray-500 hover:text-gray-700"
+        class="text-zinc-400 hover:text-zinc-200"
         (click)="auth.closeAll()"
         aria-label="Chiudi"
       >
@@ -28,15 +28,15 @@
 
     <form class="mt-4 grid gap-4" [formGroup]="form" (ngSubmit)="submit()">
       <label class="grid gap-1">
-        <span class="text-sm text-gray-700">Username</span>
+        <span class="text-sm text-zinc-300">Username</span>
         <input
           type="text"
           formControlName="username"
           autocomplete="username"
-          class="w-full rounded-lg border px-3 py-2 outline-none focus:ring [ &.ng-invalid.ng-touched ]:border-red-500"
+          class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
         />
         @if (username.touched && username.invalid) {
-        <span class="text-xs text-red-600">
+        <span class="text-xs text-red-400">
           {{
             username.hasError("required")
               ? "Username obbligatorio"
@@ -47,45 +47,45 @@
       </label>
 
       <label class="grid gap-1">
-        <span class="text-sm text-gray-700">Nome</span>
+        <span class="text-sm text-zinc-300">Nome</span>
         <input
           type="text"
           formControlName="nome"
-          class="w-full rounded-lg border px-3 py-2 outline-none focus:ring [ &.ng-invalid.ng-touched ]:border-red-500"
+          class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
         />
       </label>
 
       <label class="grid gap-1">
-        <span class="text-sm text-gray-700">Cognome</span>
+        <span class="text-sm text-zinc-300">Cognome</span>
         <input
           type="text"
           formControlName="cognome"
-          class="w-full rounded-lg border px-3 py-2 outline-none focus:ring [ &.ng-invalid.ng-touched ]:border-red-500"
+          class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
         />
       </label>
 
       <label class="grid gap-1">
-        <span class="text-sm text-gray-700">Email</span>
+        <span class="text-sm text-zinc-300">Email</span>
         <input
           type="email"
           formControlName="email"
           autocomplete="email"
-          class="w-full rounded-lg border px-3 py-2 outline-none focus:ring [ &.ng-invalid.ng-touched ]:border-red-500"
+          class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
         />
       </label>
 
       <div class="grid gap-1">
-        <label class="text-sm text-gray-700">Password</label>
+        <label class="text-sm text-zinc-300">Password</label>
         <div class="relative">
           <input
             [type]="showPassword() ? 'text' : 'password'"
             formControlName="password"
             autocomplete="new-password"
-            class="w-full rounded-lg border px-3 py-2 pr-12 outline-none focus:ring [ &.ng-invalid.ng-touched ]:border-red-500"
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 pr-12 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
           />
           <button
             type="button"
-            class="absolute inset-y-0 right-2 my-auto px-2 text-sm text-gray-600 hover:text-gray-800"
+            class="absolute inset-y-0 right-2 my-auto px-2 text-sm text-zinc-400 hover:text-zinc-200"
             (click)="togglePassword()"
           >
             {{ showPassword() ? "Nascondi" : "Mostra" }}
@@ -95,17 +95,17 @@
 
       <button
         type="submit"
-        class="mt-2 rounded-xl bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+        class="mt-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
         [disabled]="form.invalid || auth.loading()"
       >
         {{ auth.loading() ? "Creazione…" : "Crea account" }}
       </button>
     </form>
 
-    <div class="mt-4 text-sm text-right">
+    <div class="mt-4 text-right text-sm">
       <button
         type="button"
-        class="text-blue-600 hover:underline"
+        class="text-blue-400 hover:underline"
         (click)="auth.openLogin()"
       >
         Hai già un account? Accedi

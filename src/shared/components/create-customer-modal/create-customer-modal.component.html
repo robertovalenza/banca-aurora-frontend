@@ -1,12 +1,10 @@
 @if(open){
 <ng-container>
-  <!-- Overlay -->
   <div
     class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
     (click)="close()"
   ></div>
 
-  <!-- Dialog -->
   <div
     class="fixed inset-0 z-50 grid place-items-center px-4"
     (keydown.escape)="close()"
@@ -33,7 +31,6 @@
         cliente.
       </p>
 
-      <!-- 👇 Il form è il padre diretto di tutti i formControlName -->
       <form class="mt-4 grid gap-4" [formGroup]="form" (ngSubmit)="submit()">
         <label class="grid gap-1">
           <span class="text-sm text-zinc-300">Nome</span>
