@@ -1,6 +1,6 @@
 import { Injectable, signal } from "@angular/core";
 import { HttpService } from "../services/http.service";
-import { RegisterRequest } from "../interfaces/api";
+import { IRegisterRequest } from "../interfaces/api";
 
 @Injectable({ providedIn: "root" })
 export class AuthStore {
@@ -45,13 +45,10 @@ export class AuthStore {
     try {
       const res = await this.http.handleLogin({ username: email, password });
 
-      // remember me (ATTENZIONE: password in localStorage è sconsigliata in prod)
       if (remember) {
         localStorage.setItem("username", email);
-        localStorage.setItem("password", password);
       } else {
         localStorage.removeItem("username");
-        localStorage.removeItem("password");
       }
       console.log("Login successful:", res.data);
       this.closeAll();
@@ -66,7 +63,7 @@ export class AuthStore {
     }
   }
 
-  async register(req: RegisterRequest): Promise<void> {
+  async register(req: IRegisterRequest): Promise<void> {
     this._error.set(null);
     this._loading.set(true);
     try {

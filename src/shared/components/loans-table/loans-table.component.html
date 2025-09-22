@@ -1,0 +1,55 @@
+<div class="w-full rounded-xl border border-zinc-800 bg-zinc-900">
+  <div
+    class="grid grid-cols-4 gap-3 px-4 py-3 border-b border-zinc-800 text-xs font-medium uppercase tracking-wide text-zinc-400"
+  >
+    <div>Importo</div>
+    <div>Rata mensile</div>
+    <div>Mesi</div>
+    <div>Stato</div>
+  </div>
+
+  @for (loan of loansTable; track $index) {
+  <div
+    class="grid grid-cols-4 gap-3 px-4 py-3 border-b border-zinc-800 last:border-b-0 text-sm text-zinc-100"
+  >
+    <div class="font-medium">
+      {{ loan.amount | currency : "EUR" : "symbol" : "1.0-0" }}
+    </div>
+
+    <div>
+      {{ loan.monthlyPayment | currency : "EUR" : "symbol" : "1.2-2" }}
+    </div>
+
+    <div>
+      {{ loan.months }}
+    </div>
+
+    <div>
+      <span
+        class="inline-flex items-center rounded-full px-2 py-0.5 text-xs border"
+        [ngClass]="{
+          'bg-emerald-900/40 text-emerald-300 border-emerald-700/50':
+            loan.status === 'APPROVED',
+          'bg-amber-900/40 text-amber-300 border-amber-700/50':
+            loan.status === 'PENDING',
+          'bg-orange-900/40 text-orange-300 border-orange-700/50':
+            loan.status === 'SUBMITTED',
+          'bg-red-900/40 text-red-300 border-red-700/50':
+            loan.status === 'DECLINED' || loan.status === 'REJECTED',
+          'bg-zinc-800 text-zinc-300 border-zinc-700/50': ![
+            'APPROVED',
+            'PENDING',
+            'SUBMITTED',
+            'DECLINED',
+            'REJECTED'
+          ].includes(loan.status ?? '')
+        }"
+      >
+        {{ loan.status }}
+      </span>
+    </div>
+  </div>
+  } @if (!loansTable?.length) {
+  <div class="px-4 py-6 text-sm text-zinc-400">Nessun prestito trovato.</div>
+  }
+</div>

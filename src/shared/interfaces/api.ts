@@ -10,12 +10,12 @@ export interface ApiRequestOptions {
   hasToken: boolean;
 }
 
-export interface LoginRequest {
+export interface ILoginRequest {
   username: string;
   password: string;
 }
 
-export interface LoginResponse {
+export interface ILoginResponse {
   access_token: string;
   expires_in?: number;
   refresh_token?: string;
@@ -26,7 +26,7 @@ export interface LoginResponse {
   scope?: string;
 }
 
-export interface RegisterRequest {
+export interface IRegisterRequest {
   username: string;
   email: string;
   password: string;
@@ -34,7 +34,7 @@ export interface RegisterRequest {
   lastName: string;
 }
 
-export interface RegisterResponse {
+export interface IRegisterResponse {
   id?: string | number;
   user?: any;
   access_token?: string;
@@ -42,4 +42,45 @@ export interface RegisterResponse {
   token_type?: string;
   expires_in?: number;
   message?: string;
+}
+
+export interface ILoan {
+  applicationId: string;
+  customerId: string;
+  amount: number;
+  months: number;
+  purpose: string;
+  status: "APPROVED" | "PENDING" | "REJECTED" | string;
+  score: number;
+  apr: number;
+  monthlyPayment: number;
+}
+
+export interface ILoansPage {
+  page: number;
+  pageSize: number;
+  total: number;
+  items: ILoan[];
+}
+
+export interface ApiRequestOptions {
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  endpoint: string;
+  body?: any;
+  hasToken: boolean;
+  params?: Record<string, string | number | boolean | null | undefined>;
+  _retry?: boolean;
+}
+
+export interface ICustomer {
+  id?: string | number;
+  customerId?: string;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  status?: string;
+  createdAt?: string;
+  [k: string]: any;
 }

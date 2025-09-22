@@ -8,4 +8,11 @@ export const routes: Routes = [
         (m) => m.HomeComponent
       ),
   },
+  {
+    path: "dashboard",
+    loadComponent: () =>
+      import("../shared/components/dashboard/dashboard.component").then(
+        (m) => m.DashboardComponent
+      ),
+  },
 ];

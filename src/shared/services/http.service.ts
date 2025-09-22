@@ -2,19 +2,23 @@ import { inject, Injectable } from "@angular/core";
 import {
   ApiRequestOptions,
   ApiResponse,
-  LoginRequest,
-  LoginResponse,
-  RegisterRequest,
-  RegisterResponse,
+  ICustomer,
+  ILoansPage,
+  ILoginRequest,
+  ILoginResponse,
+  IRegisterRequest,
+  IRegisterResponse,
 } from "../interfaces/api";
 import {
   HttpClient,
   HttpErrorResponse,
   HttpHeaders,
+  HttpParams,
 } from "@angular/common/http";
-import { lastValueFrom } from "rxjs";
-import { environment } from "../../app/environments/environments";
+import { async, lastValueFrom } from "rxjs";
+import { environment } from "../../environments/environments";
 import { LoaderService } from "./loader.service";
+import { Router } from "@angular/router";
 
 @Injectable({
   providedIn: "root",
@@ -23,22 +27,26 @@ export class HttpService {
   private http = inject(HttpClient);
   private fallbackBaseUrl = environment.apiUrl ?? "";
 
-  constructor(private loader: LoaderService) {}
+  constructor(private loader: LoaderService, private router: Router) {}
 
+  navigateTo(url?: string): Promise<boolean> {
+    if (url) {
+      return this.router.navigateByUrl(url);
+    }
+    return Promise.resolve(false);
+  }
   private getExpiryFromJwt(token: string): number | null {
     try {
       const [, payload] = token.split(".");
       const decoded = JSON.parse(
         atob(payload.replace(/-/g, "+").replace(/_/g, "/"))
       );
-      // exp è in secondi epoch
       return typeof decoded?.exp === "number" ? decoded.exp * 1000 : null;
     } catch {
       return null;
     }
   }
 
-  // --- helper: salva in sessione ---
   private setSession(opts: {
     accessToken: string;
     refreshToken?: string;
@@ -60,8 +68,22 @@ export class HttpService {
 
     if (options.hasToken) {
       const accessToken = localStorage.getItem("accessToken") ?? "";
-      if (accessToken)
-        headers = headers.set("Authorization", `Bearer ${accessToken}`);
+      if (accessToken) {
+        const tokenType = localStorage.getItem("tokenType") || "Bearer";
+        headers = headers.set("Authorization", `${tokenType} ${accessToken}`);
+      }
+    }
+
+    // <-- NEW: costruisci HttpParams solo dai valori definiti
+    let params: HttpParams | undefined;
+    if (options.params) {
+      const p = new HttpParams({
+        fromObject: Object.entries(options.params).reduce((acc, [k, v]) => {
+          if (v !== null && v !== undefined && v !== "") acc[k] = String(v);
+          return acc;
+        }, {} as Record<string, string>),
+      });
+      params = p;
     }
 
     try {
@@ -71,6 +93,7 @@ export class HttpService {
           headers,
           observe: "response",
           withCredentials: false,
+          params, // <-- NEW
         })
       );
       return { status: response.status, data: response.body as T };
@@ -83,7 +106,7 @@ export class HttpService {
   async handleLogin(creds?: {
     username: string;
     password: string;
-  }): Promise<ApiResponse<LoginResponse>> {
+  }): Promise<ApiResponse<ILoginResponse>> {
     const username = creds?.username ?? localStorage.getItem("username") ?? "";
     const password = creds?.password ?? localStorage.getItem("password") ?? "";
 
@@ -94,11 +117,11 @@ export class HttpService {
       });
     }
 
-    const body: LoginRequest = { username, password };
+    const body: ILoginRequest = { username, password };
     this.loader.showLoading("Autenticazione…");
 
     try {
-      const response = await this.apiRequest<LoginResponse>({
+      const response = await this.apiRequest<ILoginResponse>({
         method: "POST",
         endpoint: environment.Login,
         body,
@@ -125,7 +148,7 @@ export class HttpService {
         refreshToken: refresh_token,
         expiresAtMs,
       });
-
+      this.navigateTo("/dashboard");
       return response;
     } catch (err) {
       const e = err as HttpErrorResponse | any;
@@ -146,8 +169,8 @@ export class HttpService {
   }
 
   async handleRegister(
-    body: RegisterRequest
-  ): Promise<ApiResponse<RegisterResponse>> {
+    body: IRegisterRequest
+  ): Promise<ApiResponse<IRegisterResponse>> {
     if (
       !body.username ||
       !body.email ||
@@ -163,18 +186,18 @@ export class HttpService {
     this.loader.showLoading("Registrazione in corso...");
 
     try {
-      const res = await this.apiRequest<RegisterResponse>({
+      const response = await this.apiRequest<IRegisterResponse>({
         method: "POST",
         endpoint: environment.Register,
         body,
         hasToken: false,
       });
 
-      if (res.data?.access_token) {
-        const accessToken = res.data.access_token;
-        const refreshToken = res.data.refresh_token;
-        const tokenType = res.data.token_type || "Bearer";
-        const expiresIn = res.data.expires_in;
+      if (response.data?.access_token) {
+        const accessToken = response.data.access_token;
+        const refreshToken = response.data.refresh_token;
+        const tokenType = response.data.token_type || "Bearer";
+        const expiresIn = response.data.expires_in;
 
         const expFromJwtMs = this.getExpiryFromJwt(accessToken);
         const expiresAtMs =
@@ -190,7 +213,8 @@ export class HttpService {
           localStorage.setItem("tokenExpiry", String(expiresAtMs));
       }
 
-      return res;
+      this.navigateTo("/dashboard");
+      return response;
     } catch (err) {
       const e = err as HttpErrorResponse | any;
 
@@ -208,6 +232,129 @@ export class HttpService {
         `Registrazione non riuscita: ${message}`
       );
 
+      return Promise.reject({ status, data: { message } as any });
+    } finally {
+      this.loader.hideLoading();
+    }
+  }
+
+  // Ricava l'id cliente dagli oggetti profilo (adatta se cambia il nome campo)
+  private extractCustomerId(profile: any): string | null {
+    return profile?.customerId ?? profile?.id ?? null;
+  }
+
+  /** Ottiene customerId da localStorage o lo scarica (senza mostrare loader) */
+  private async ensureCustomerId(): Promise<string> {
+    const cached = localStorage.getItem("customerId");
+    if (cached) return cached;
+
+    try {
+      const res = await this.apiRequest<ICustomer>({
+        method: "GET",
+        endpoint: environment.GetOwnCustomerData, // es. '/customers/me'
+        hasToken: true,
+        _retry: true, // evita retry loops nel refresh
+      });
+
+      const cid = this.extractCustomerId(res.data);
+      if (cid) {
+        localStorage.setItem("customerId", cid);
+        // opzionale: cache anche il profilo completo
+        localStorage.setItem("user", JSON.stringify(res.data));
+        return cid;
+      }
+
+      throw {
+        status: 400,
+        data: { message: "customerId non presente nella risposta profilo" },
+      };
+    } catch (e) {
+      throw {
+        status: 400,
+        data: { message: "Impossibile ottenere customerId" },
+      };
+    }
+  }
+
+  async getLoans(args: {
+    status?: string;
+    customerId?: string | number; // ora opzionale
+    page?: number;
+    pageSize?: number;
+    sort?: string;
+  }): Promise<ApiResponse<ILoansPage>> {
+    const { status, page = 1, pageSize = 20, sort } = args ?? {};
+
+    this.loader.showLoading("Recupero prestiti in corso...");
+
+    try {
+      const customerId = args?.customerId ?? (await this.ensureCustomerId()); // 👈 prende da me/LS
+
+      const params: Record<string, string> = {
+        customerId: String(customerId),
+        page: String(page),
+        pageSize: String(pageSize),
+      };
+      if (status) params["status"] = String(status);
+      if (sort) params["sort"] = String(sort);
+
+      const res = await this.apiRequest<ILoansPage>({
+        method: "GET",
+        endpoint: environment.GetLoans,
+        hasToken: true,
+        params,
+      });
+
+      return res;
+    } catch (err) {
+      const e = err as HttpErrorResponse | any;
+      const status = e?.status ?? 0;
+      const message =
+        e?.error?.message ||
+        e?.message ||
+        (status === 0
+          ? "Impossibile contattare il server"
+          : "Errore recupero loans");
+      this.loader.presentAlert(
+        "Errore",
+        `Recupero prestiti non riuscito: ${message}`
+      );
+      return Promise.reject({ status, data: { message } as any });
+    } finally {
+      this.loader.hideLoading();
+    }
+  }
+
+  async getOwnCustomerData(): Promise<ApiResponse<ICustomer>> {
+    this.loader.showLoading("Carico i tuoi dati…");
+    this.loader.showLoading("Recupero dati in corso...");
+
+    try {
+      const res = await this.apiRequest<ICustomer>({
+        method: "GET",
+        endpoint: environment.GetOwnCustomerData,
+        hasToken: true,
+      });
+
+      if (res?.data) {
+        localStorage.setItem("user", JSON.stringify(res.data));
+      }
+
+      return res;
+    } catch (err) {
+      const e = err as HttpErrorResponse | any;
+      const status = e?.status ?? 0;
+      const message =
+        e?.error?.message ||
+        e?.message ||
+        (status === 0
+          ? "Impossibile contattare il server"
+          : "Errore nel recupero dei dati utente");
+
+      this.loader.presentAlert(
+        "Errore",
+        `Recupero profilo non riuscito: ${message}`
+      );
       return Promise.reject({ status, data: { message } as any });
     } finally {
       this.loader.hideLoading();
