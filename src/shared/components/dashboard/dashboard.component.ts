@@ -4,6 +4,7 @@ import { HttpService } from "../../services/http.service";
 import { LoanRequestModalComponent } from "../loan-request-modal/loan-request-modal.component";
 import { GlobalService } from "../../services/global.service";
 import { CreateCustomerModalComponent } from "../create-customer-modal/create-customer-modal.component";
+import { UpdateIncomeModalComponent } from "../update-income-modal/update-income-modal.component";
 
 @Component({
   selector: "app-dashboard",
@@ -11,6 +12,7 @@ import { CreateCustomerModalComponent } from "../create-customer-modal/create-cu
     LoansTableComponent,
     LoanRequestModalComponent,
     CreateCustomerModalComponent,
+    UpdateIncomeModalComponent,
   ],
   templateUrl: "./dashboard.component.html",
   styleUrl: "./dashboard.component.scss",
@@ -18,6 +20,7 @@ import { CreateCustomerModalComponent } from "../create-customer-modal/create-cu
 export class DashboardComponent {
   requestOpen = signal(false);
   createCustomerOpen = signal(false);
+  incomeOpen = signal(false);
 
   constructor(
     private httpService: HttpService,
@@ -62,5 +65,17 @@ export class DashboardComponent {
   async onCustomerCreated() {
     this.createCustomerOpen.set(false);
     await this.loadLoans(); // ora che c'è il profilo, carica le loans
+  }
+
+  openIncomeModal() {
+    this.incomeOpen.set(true);
+  }
+  onIncomeClosed() {
+    this.incomeOpen.set(false);
+  }
+  onIncomeUpdated(_value: number) {
+    this.incomeOpen.set(false);
+    // Se vuoi, ricarica le loans o aggiornare UI che dipende dal reddito
+    // this.loadLoans();
   }
 }

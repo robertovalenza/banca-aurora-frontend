@@ -13,14 +13,12 @@ import { CdkTrapFocus } from "@angular/cdk/a11y"; // 👈
 export class ModalLoginComponent {
   auth = inject(AuthStore);
   fb = inject(FormBuilder);
-  private destroyRef = inject(DestroyRef);
-
   showPassword = signal(false);
+  private destroyRef = inject(DestroyRef);
 
   form = this.fb.nonNullable.group({
     username: ["", [Validators.required, Validators.minLength(3)]],
     password: ["", [Validators.required, Validators.minLength(8)]],
-    remember: [false],
   });
 
   private readonly eff = effect(() => {
@@ -57,11 +55,7 @@ export class ModalLoginComponent {
       this.form.markAllAsTouched();
       return;
     }
-    const { username, password, remember } = this.form.getRawValue();
-    await this.auth.login(username, password, remember);
-  }
-
-  forgotPassword() {
-    alert('Funzione "Password dimenticata?" da implementare.');
+    const { username, password } = this.form.getRawValue();
+    await this.auth.login(username, password);
   }
 }

@@ -9,6 +9,6 @@ export const environment = {
   UpdateIncomeMonthly: "/customers/UpdateIncomeMonthly",
   SendLoanRequest: "/loan-applications/SendLoanRequest",
   GetLoanRequested: `/loan-applications/GetLoanRequested`,
-  Decision: "/loan-applications",
+  DecideLoan: "/loan-applications/:id/decision",
   GetLoans: "/loan-applications/GetLoans",
 };

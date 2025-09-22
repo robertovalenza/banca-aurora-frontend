@@ -4,11 +4,13 @@ import {
   ApiResponse,
   ICreateCustomerRequest,
   ICustomer,
+  ILoanDecisionResponse,
   ILoansPage,
   ILoginRequest,
   ILoginResponse,
   IRegisterRequest,
   IRegisterResponse,
+  ISendLoanAndDecisionResponse,
   ISendLoanRequest,
   ISendLoanResponse,
 } from "../interfaces/api";
@@ -417,8 +419,7 @@ export class HttpService {
 
   async sendLoanRequest(
     body: ISendLoanRequest
-  ): Promise<ApiResponse<ISendLoanResponse>> {
-    // validazione minima lato client
+  ): Promise<ApiResponse<ISendLoanAndDecisionResponse>> {
     if (
       !body ||
       body.amount == null ||
@@ -434,11 +435,11 @@ export class HttpService {
     this.loader.showLoading("Invio richiesta prestito…");
 
     try {
-      // se manca il customerId nel body, lo ricavo io
       const customerId =
         body.customerId ??
         localStorage.getItem("customerId") ??
         (await this.ensureCustomerId());
+
       const payload: ISendLoanRequest = {
         customerId,
         amount: body.amount,
@@ -446,14 +447,33 @@ export class HttpService {
         purpose: body.purpose.trim(),
       };
 
-      const res = await this.apiRequest<ISendLoanResponse>({
+      // 1) invio richiesta prestito
+      const sendRes = await this.apiRequest<ISendLoanResponse>({
         method: "POST",
-        endpoint: environment.SendLoanRequest,
+        endpoint: environment.SendLoanRequest, // es.: '/loan-applications/SendLoanApplication'
         hasToken: true,
         body: payload,
       });
 
-      return res; // { status, data }
+      const appId = sendRes?.data?.applicationId;
+      if (!appId) {
+        return Promise.reject({
+          status: 500,
+          data: { message: "ApplicationId assente nella risposta" } as any,
+        });
+      }
+
+      // 2) decisione immediata con applicationId
+      const decideRes = await this.getLoanDecision(appId);
+
+      // 3) ritorno combinato: dati della submission + decisione
+      const combined: ISendLoanAndDecisionResponse = {
+        ...sendRes.data,
+        decision: decideRes.data,
+      };
+
+      // status complessivo: riuso lo status della decision (o quello della POST se preferisci)
+      return { status: decideRes.status, data: combined };
     } catch (err) {
       const e = err as HttpErrorResponse | any;
       const status = e?.status ?? 0;
@@ -466,7 +486,7 @@ export class HttpService {
 
       this.loader.presentAlert(
         "Errore",
-        `Non è stato possibile inviare la richiesta: ${message}`
+        `Non è stato possibile inviare/valutare la richiesta: ${message}`
       );
       return Promise.reject({ status, data: { message } as any });
     } finally {
@@ -474,7 +494,6 @@ export class HttpService {
     }
   }
 
-  // http.service.ts (aggiungi helper)
   private getNamesFromJwt(token: string): {
     firstName?: string;
     lastName?: string;
@@ -495,6 +514,98 @@ export class HttpService {
       return { firstName, lastName };
     } catch {
       return {};
+    }
+  }
+
+  private buildDecideLoanEndpoint(applicationId: string): string {
+    return environment.DecideLoan.replace(":id", applicationId);
+  }
+
+  async getLoanDecision(
+    applicationId: string
+  ): Promise<ApiResponse<ILoanDecisionResponse>> {
+    if (!applicationId) {
+      return Promise.reject({
+        status: 400,
+        data: { message: "applicationId mancante" } as any,
+      });
+    }
+
+    // niente loader qui: lo gestisce sendLoanRequest per l’intero flusso
+    try {
+      const res = await this.apiRequest<ILoanDecisionResponse>({
+        method: "POST",
+        endpoint: this.buildDecideLoanEndpoint(applicationId),
+        hasToken: true,
+      });
+      return res;
+    } catch (err) {
+      const e = err as HttpErrorResponse | any;
+      const status = e?.status ?? 0;
+      const message =
+        e?.error?.message ||
+        e?.message ||
+        (status === 0
+          ? "Impossibile contattare il server"
+          : "Decisione prestito fallita");
+      this.loader.presentAlert(
+        "Errore",
+        `Decisione non disponibile: ${message}`
+      );
+      return Promise.reject({ status, data: { message } as any });
+    }
+  }
+
+  async updateIncomeMonthly(
+    incomeMonthly: number
+  ): Promise<ApiResponse<ICustomer>> {
+    if (incomeMonthly == null || isNaN(incomeMonthly) || incomeMonthly < 0) {
+      return Promise.reject({
+        status: 400,
+        data: { message: "Valore entrate non valido" } as any,
+      });
+    }
+
+    this.loader.showLoading("Aggiornamento entrate…");
+
+    try {
+      const res = await this.apiRequest<ICustomer>({
+        method: "PUT",
+        endpoint: environment.UpdateIncomeMonthly,
+        hasToken: true,
+        body: { incomeMonthly },
+      });
+
+      // aggiorna cache utente locale se presente
+      if (res?.data) {
+        localStorage.setItem("user", JSON.stringify(res.data));
+      } else {
+        // se la risposta non ritorna il profilo, aggiorna comunque il valore nel "user" in LS se esiste
+        const userRaw = localStorage.getItem("user");
+        if (userRaw) {
+          try {
+            const usr = JSON.parse(userRaw);
+            usr.incomeMonthly = incomeMonthly;
+            localStorage.setItem("user", JSON.stringify(usr));
+          } catch {}
+        }
+      }
+
+      this.loader.presentAlert("Fatto!", "Entrate mensili aggiornate.");
+      return res;
+    } catch (err) {
+      const e = err as HttpErrorResponse | any;
+      const status = e?.status ?? 0;
+      const message =
+        e?.error?.message ||
+        e?.message ||
+        (status === 0
+          ? "Impossibile contattare il server"
+          : "Aggiornamento entrate fallito");
+      this.loader.presentAlert("Errore", message);
+      return Promise.reject({ status, data: { message } as any });
+    } finally {
+      this.loader.hideLoading();
     }
   }
 }

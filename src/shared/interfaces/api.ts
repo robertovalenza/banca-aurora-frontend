@@ -110,3 +110,20 @@ export interface ICreateCustomerRequest {
   fiscalCode: string;
   incomeMonthly: number;
 }
+
+export interface ILoanDecisionResponse {
+  status:
+    | "APPROVED"
+    | "PENDING"
+    | "DECLINED"
+    | "REJECTED"
+    | "SUBMITTED"
+    | string;
+  apr: number;
+  monthlyPayment: number;
+  score: number;
+}
+
+export interface ISendLoanAndDecisionResponse extends ISendLoanResponse {
+  decision: ILoanDecisionResponse;
+}

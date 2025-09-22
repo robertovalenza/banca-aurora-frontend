@@ -34,22 +34,13 @@ export class AuthStore {
     this._error.set(null);
   }
 
-  async login(
-    email: string,
-    password: string,
-    remember: boolean
-  ): Promise<void> {
+  async login(email: string, password: string): Promise<void> {
     this._error.set(null);
     this._loading.set(true);
 
     try {
       const res = await this.http.handleLogin({ username: email, password });
 
-      if (remember) {
-        localStorage.setItem("username", email);
-      } else {
-        localStorage.removeItem("username");
-      }
       console.log("Login successful:", res.data);
       this.closeAll();
     } catch (e: any) {
