@@ -2,12 +2,15 @@ import { inject, Injectable } from "@angular/core";
 import {
   ApiRequestOptions,
   ApiResponse,
+  ICreateCustomerRequest,
   ICustomer,
   ILoansPage,
   ILoginRequest,
   ILoginResponse,
   IRegisterRequest,
   IRegisterResponse,
+  ISendLoanRequest,
+  ISendLoanResponse,
 } from "../interfaces/api";
 import {
   HttpClient,
@@ -19,6 +22,7 @@ import { async, lastValueFrom } from "rxjs";
 import { environment } from "../../environments/environments";
 import { LoaderService } from "./loader.service";
 import { Router } from "@angular/router";
+import { GlobalService } from "./global.service";
 
 @Injectable({
   providedIn: "root",
@@ -27,7 +31,11 @@ export class HttpService {
   private http = inject(HttpClient);
   private fallbackBaseUrl = environment.apiUrl ?? "";
 
-  constructor(private loader: LoaderService, private router: Router) {}
+  constructor(
+    private loader: LoaderService,
+    private service: GlobalService,
+    private router: Router
+  ) {}
 
   navigateTo(url?: string): Promise<boolean> {
     if (url) {
@@ -129,6 +137,9 @@ export class HttpService {
       });
 
       const { access_token, refresh_token, expires_in } = response.data;
+      const { firstName, lastName } = this.getNamesFromJwt(access_token);
+      if (firstName) localStorage.setItem("firstName", firstName);
+      if (lastName) localStorage.setItem("lastName", lastName);
 
       if (!access_token) {
         return Promise.reject({
@@ -148,6 +159,7 @@ export class HttpService {
         refreshToken: refresh_token,
         expiresAtMs,
       });
+      this.service.setLoans([]);
       this.navigateTo("/dashboard");
       return response;
     } catch (err) {
@@ -327,8 +339,6 @@ export class HttpService {
 
   async getOwnCustomerData(): Promise<ApiResponse<ICustomer>> {
     this.loader.showLoading("Carico i tuoi dati…");
-    this.loader.showLoading("Recupero dati in corso...");
-
     try {
       const res = await this.apiRequest<ICustomer>({
         method: "GET",
@@ -337,6 +347,54 @@ export class HttpService {
       });
 
       if (res?.data) {
+        localStorage.setItem("user", JSON.stringify(res.data));
+        const cid = this.extractCustomerId(res.data);
+        if (cid) localStorage.setItem("customerId", cid);
+      }
+
+      return res;
+    } catch (err) {
+      const e = err as HttpErrorResponse | any;
+      // NON mostro alert qui: il chiamante decide (per aprire la modale)
+      return Promise.reject({
+        status: e?.status ?? 0,
+        data: { message: e?.message } as any,
+      });
+    } finally {
+      this.loader.hideLoading();
+    }
+  }
+
+  async createCustomer(
+    body: ICreateCustomerRequest
+  ): Promise<ApiResponse<ICustomer>> {
+    // validazione minima
+    if (
+      !body.firstName ||
+      !body.lastName ||
+      !body.fiscalCode ||
+      body.incomeMonthly == null
+    ) {
+      return Promise.reject({
+        status: 400,
+        data: { message: "Dati cliente incompleti" } as any,
+      });
+    }
+
+    this.loader.showLoading("Creazione profilo…");
+
+    try {
+      const res = await this.apiRequest<ICustomer>({
+        method: "POST",
+        endpoint: environment.CreateCustomer,
+        hasToken: true,
+        body,
+      });
+
+      // salva subito customerId per le chiamate successive
+      if (res?.data) {
+        const cid = this.extractCustomerId(res.data);
+        if (cid) localStorage.setItem("customerId", cid);
         localStorage.setItem("user", JSON.stringify(res.data));
       }
 
@@ -349,15 +407,94 @@ export class HttpService {
         e?.message ||
         (status === 0
           ? "Impossibile contattare il server"
-          : "Errore nel recupero dei dati utente");
+          : "Creazione profilo fallita");
+      this.loader.presentAlert("Errore", message);
+      return Promise.reject({ status, data: { message } as any });
+    } finally {
+      this.loader.hideLoading();
+    }
+  }
+
+  async sendLoanRequest(
+    body: ISendLoanRequest
+  ): Promise<ApiResponse<ISendLoanResponse>> {
+    // validazione minima lato client
+    if (
+      !body ||
+      body.amount == null ||
+      body.months == null ||
+      !body.purpose?.trim()
+    ) {
+      return Promise.reject({
+        status: 400,
+        data: { message: "Dati richiesta prestito incompleti" } as any,
+      });
+    }
+
+    this.loader.showLoading("Invio richiesta prestito…");
+
+    try {
+      // se manca il customerId nel body, lo ricavo io
+      const customerId =
+        body.customerId ??
+        localStorage.getItem("customerId") ??
+        (await this.ensureCustomerId());
+      const payload: ISendLoanRequest = {
+        customerId,
+        amount: body.amount,
+        months: body.months,
+        purpose: body.purpose.trim(),
+      };
+
+      const res = await this.apiRequest<ISendLoanResponse>({
+        method: "POST",
+        endpoint: environment.SendLoanRequest,
+        hasToken: true,
+        body: payload,
+      });
+
+      return res; // { status, data }
+    } catch (err) {
+      const e = err as HttpErrorResponse | any;
+      const status = e?.status ?? 0;
+      const message =
+        e?.error?.message ||
+        e?.message ||
+        (status === 0
+          ? "Impossibile contattare il server"
+          : "Invio richiesta prestito fallito");
 
       this.loader.presentAlert(
         "Errore",
-        `Recupero profilo non riuscito: ${message}`
+        `Non è stato possibile inviare la richiesta: ${message}`
       );
       return Promise.reject({ status, data: { message } as any });
     } finally {
       this.loader.hideLoading();
+    }
+  }
+
+  // http.service.ts (aggiungi helper)
+  private getNamesFromJwt(token: string): {
+    firstName?: string;
+    lastName?: string;
+  } {
+    try {
+      const [, payload] = token.split(".");
+      const decoded = JSON.parse(
+        atob(payload.replace(/-/g, "+").replace(/_/g, "/"))
+      );
+      const firstName =
+        decoded?.given_name ||
+        decoded?.firstName ||
+        decoded?.name?.split(" ")?.[0];
+      const lastName =
+        decoded?.family_name ||
+        decoded?.lastName ||
+        decoded?.name?.split(" ")?.slice(1).join(" ");
+      return { firstName, lastName };
+    } catch {
+      return {};
     }
   }
 }

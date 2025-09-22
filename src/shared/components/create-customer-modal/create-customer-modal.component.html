@@ -1,0 +1,112 @@
+@if(open){
+<ng-container>
+  <!-- Overlay -->
+  <div
+    class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+    (click)="close()"
+  ></div>
+
+  <!-- Dialog -->
+  <div
+    class="fixed inset-0 z-50 grid place-items-center px-4"
+    (keydown.escape)="close()"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      class="w-full max-w-md rounded-2xl bg-zinc-900 border border-zinc-800 p-6 shadow-2xl outline-none"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-start justify-between gap-4">
+        <h2 class="text-lg font-semibold text-zinc-100">Completa il profilo</h2>
+        <button
+          class="text-zinc-400 hover:text-zinc-200"
+          (click)="close()"
+          aria-label="Chiudi"
+        >
+          ✕
+        </button>
+      </div>
+
+      <p class="mt-2 text-sm text-zinc-300">
+        Quasi finito! Inserisci i dati mancanti per completare il profilo
+        cliente.
+      </p>
+
+      <!-- 👇 Il form è il padre diretto di tutti i formControlName -->
+      <form class="mt-4 grid gap-4" [formGroup]="form" (ngSubmit)="submit()">
+        <label class="grid gap-1">
+          <span class="text-sm text-zinc-300">Nome</span>
+          <input
+            type="text"
+            formControlName="firstName"
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
+          />
+        </label>
+
+        <label class="grid gap-1">
+          <span class="text-sm text-zinc-300">Cognome</span>
+          <input
+            type="text"
+            formControlName="lastName"
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
+          />
+        </label>
+
+        <label class="grid gap-1">
+          <span class="text-sm text-zinc-300">Codice fiscale</span>
+          <input
+            type="text"
+            formControlName="fiscalCode"
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
+            maxlength="16"
+            autocomplete="off"
+            (blur)="
+              fiscalCodeCtrl?.setValue(
+                (fiscalCodeCtrl?.value || '').toUpperCase()
+              )
+            "
+          />
+          @if (fiscalCodeCtrl?.touched && fiscalCodeCtrl?.invalid) {
+          <span class="text-xs text-red-400">
+            {{
+              fiscalCodeCtrl?.hasError("required")
+                ? "Codice fiscale obbligatorio"
+                : "Formato codice fiscale non valido"
+            }}
+          </span>
+          }
+        </label>
+
+        <label class="grid gap-1">
+          <span class="text-sm text-zinc-300">Reddito mensile</span>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            formControlName="incomeMonthly"
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
+          />
+        </label>
+
+        <div class="mt-2 flex justify-end gap-2">
+          <button
+            type="button"
+            class="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-800"
+            (click)="close()"
+          >
+            Annulla
+          </button>
+          <button
+            type="submit"
+            class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+            [disabled]="form.invalid || submitting()"
+          >
+            {{ submitting() ? "Salvataggio…" : "Crea profilo" }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</ng-container>
+}

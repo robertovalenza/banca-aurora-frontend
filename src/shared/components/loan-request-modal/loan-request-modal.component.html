@@ -1,0 +1,114 @@
+@if (open) {
+<!-- Overlay -->
+<div
+  class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+  (click)="close()"
+></div>
+
+<!-- Dialog -->
+<div
+  class="fixed inset-0 z-50 grid place-items-center px-4"
+  (keydown.escape)="close()"
+>
+  <div
+    role="dialog"
+    aria-modal="true"
+    class="w-full max-w-md rounded-2xl bg-zinc-900 border border-zinc-800 p-6 shadow-2xl outline-none"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-start justify-between gap-4">
+      <h2 class="text-lg font-semibold text-zinc-100">
+        Nuova richiesta prestito
+      </h2>
+      <button
+        class="text-zinc-400 hover:text-zinc-200"
+        (click)="close()"
+        aria-label="Chiudi"
+      >
+        ✕
+      </button>
+    </div>
+
+    <form class="mt-4 grid gap-4" [formGroup]="form" (ngSubmit)="submit()">
+      <!-- Importo -->
+      <label class="grid gap-1">
+        <span class="text-sm text-zinc-300">Importo</span>
+        <input
+          type="number"
+          formControlName="amount"
+          class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
+          min="1"
+          placeholder="es. 4000"
+        />
+        @if (amount.touched && amount.invalid) {
+        <span class="text-xs text-red-400">
+          {{
+            amount.hasError("required")
+              ? "Importo obbligatorio"
+              : "Valore non valido"
+          }}
+        </span>
+        }
+      </label>
+
+      <!-- Mesi -->
+      <label class="grid gap-1">
+        <span class="text-sm text-zinc-300">Mesi</span>
+        <input
+          type="number"
+          formControlName="months"
+          class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
+          min="1"
+          placeholder="es. 30"
+        />
+        @if (months.touched && months.invalid) {
+        <span class="text-xs text-red-400">
+          {{
+            months.hasError("required")
+              ? "Mesi obbligatori"
+              : "Valore non valido"
+          }}
+        </span>
+        }
+      </label>
+
+      <!-- Causale -->
+      <label class="grid gap-1">
+        <span class="text-sm text-zinc-300">Causale</span>
+        <textarea
+          formControlName="purpose"
+          rows="3"
+          class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100 outline-none focus:ring focus:ring-zinc-700/40 [ &.ng-invalid.ng-touched ]:border-red-500"
+          placeholder="Descrivi lo scopo del prestito"
+        ></textarea>
+        @if (purpose.touched && purpose.invalid) {
+        <span class="text-xs text-red-400">
+          {{
+            purpose.hasError("required")
+              ? "Causale obbligatoria"
+              : "Minimo 3 caratteri"
+          }}
+        </span>
+        }
+      </label>
+
+      <div class="mt-2 flex justify-end gap-2">
+        <button
+          type="button"
+          class="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-800"
+          (click)="close()"
+        >
+          Annulla
+        </button>
+        <button
+          type="submit"
+          class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+          [disabled]="form.invalid || submitting()"
+        >
+          {{ submitting() ? "Invio…" : "Invia richiesta" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}

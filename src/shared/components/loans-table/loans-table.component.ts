@@ -1,7 +1,8 @@
 import { Component } from "@angular/core";
-import { HttpService } from "../../services/http.service";
 import { ILoan } from "../../interfaces/api";
 import { CommonModule } from "@angular/common";
+import { Subscription } from "rxjs";
+import { GlobalService } from "../../services/global.service";
 
 @Component({
   selector: "app-loans-table",
@@ -11,12 +12,15 @@ import { CommonModule } from "@angular/common";
 })
 export class LoansTableComponent {
   loansTable: ILoan[] = [];
-  constructor(private httpService: HttpService) {}
+  subscription: Subscription = new Subscription();
+
+  constructor(private service: GlobalService) {}
 
   async ngOnInit() {
-    await this.httpService.getLoans({}).then((res) => {
-      if (res.status === 200) this.loansTable = res.data.items;
-      console.log(res.data.items);
-    });
+    this.subscription.add(
+      this.service.loansList$.subscribe((loans) => {
+        this.loansTable = loans;
+      })
+    );
   }
 }

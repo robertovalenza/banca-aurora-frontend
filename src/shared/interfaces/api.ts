@@ -84,3 +84,29 @@ export interface ICustomer {
   createdAt?: string;
   [k: string]: any;
 }
+
+export interface ISendLoanRequest {
+  customerId?: string;
+  amount: number;
+  months: number;
+  purpose: string;
+}
+
+export interface ISendLoanResponse {
+  applicationId?: string;
+  status?:
+    | "SUBMITTED"
+    | "PENDING"
+    | "APPROVED"
+    | "DECLINED"
+    | "REJECTED"
+    | string;
+  [k: string]: any;
+}
+
+export interface ICreateCustomerRequest {
+  firstName: string;
+  lastName: string;
+  fiscalCode: string;
+  incomeMonthly: number;
+}

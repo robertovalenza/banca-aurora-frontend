@@ -7,7 +7,7 @@ export const environment = {
   GetOwnCustomerData: "/customers/GetOwnCustomerData",
   CreateCustomer: "/customers/CreateCustomer",
   UpdateIncomeMonthly: "/customers/UpdateIncomeMonthly",
-  SendLoadApplication: "/loan-applications/SendLoanApplication",
+  SendLoanRequest: "/loan-applications/SendLoanRequest",
   GetLoanRequested: `/loan-applications/GetLoanRequested`,
   Decision: "/loan-applications",
   GetLoans: "/loan-applications/GetLoans",
