@@ -1,10 +1,12 @@
+// modal-login.component.ts
 import { Component, DestroyRef, effect, inject, signal } from "@angular/core";
 import { AuthStore } from "../../stores/auth.store";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
+import { CdkTrapFocus } from "@angular/cdk/a11y"; // 👈
 
 @Component({
   selector: "app-modal-login",
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CdkTrapFocus],
   templateUrl: "./modal-login.component.html",
   styleUrl: "./modal-login.component.scss",
 })
@@ -16,7 +18,7 @@ export class ModalLoginComponent {
   showPassword = signal(false);
 
   form = this.fb.nonNullable.group({
-    email: ["", [Validators.required, Validators.email]],
+    username: ["", [Validators.required, Validators.minLength(3)]],
     password: ["", [Validators.required, Validators.minLength(8)]],
     remember: [false],
   });
@@ -25,13 +27,15 @@ export class ModalLoginComponent {
     document.body.style.overflow =
       this.auth.loginOpen() || this.auth.registerOpen() ? "hidden" : "";
   });
+
   constructor() {
     this.destroyRef.onDestroy(() => this.eff.destroy());
   }
 
-  get email() {
-    return this.form.controls.email;
+  get username() {
+    return this.form.controls.username;
   }
+
   get password() {
     return this.form.controls.password;
   }
@@ -40,12 +44,13 @@ export class ModalLoginComponent {
     this.showPassword.update((v) => !v);
   }
 
-  submit() {
-    if (this.form.invalid) {
+  async submit() {
+    if (this.form.invalid || this.auth.loading()) {
       this.form.markAllAsTouched();
       return;
     }
-    this.auth.closeAll();
+    const { username, password, remember } = this.form.getRawValue();
+    await this.auth.login(username, password, remember);
   }
 
   forgotPassword() {
