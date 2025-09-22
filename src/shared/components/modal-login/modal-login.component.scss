@@ -76,3 +76,37 @@
 .ml-primary:hover {
   background: #1d4ed8;
 }
+
+:host ::ng-deep .bg-zinc-900 input,
+:host ::ng-deep .bg-zinc-900 textarea,
+:host ::ng-deep .bg-zinc-900 select {
+  background-color: #09090b;
+  color: #fafafa;
+  border-color: #3f3f46;
+  caret-color: #fafafa;
+}
+
+:host ::ng-deep input:-webkit-autofill,
+:host ::ng-deep input:-webkit-autofill:hover,
+:host ::ng-deep input:-webkit-autofill:focus,
+:host ::ng-deep textarea:-webkit-autofill,
+:host ::ng-deep select:-webkit-autofill {
+  -webkit-text-fill-color: #fafafa !important;
+  caret-color: #fafafa !important;
+  box-shadow: 0 0 0 1000px #09090b inset !important;
+  border: 1px solid #3f3f46 !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+:host ::ng-deep input:autofill,
+:host ::ng-deep textarea:autofill,
+:host ::ng-deep select:autofill {
+  -webkit-text-fill-color: #fafafa;
+  caret-color: #fafafa;
+  box-shadow: 0 0 0 1000px #09090b inset;
+  border-color: #3f3f46;
+}
+
+:host ::ng-deep ::placeholder {
+  color: #71717a;
+}

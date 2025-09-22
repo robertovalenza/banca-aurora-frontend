@@ -1,11 +1,9 @@
 @if (open) {
-<!-- Overlay -->
 <div
   class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
   (click)="close()"
 ></div>
 
-<!-- Dialog -->
 <div
   class="fixed inset-0 z-50 grid place-items-center px-4"
   (keydown.escape)="close()"
@@ -30,7 +28,6 @@
     </div>
 
     <form class="mt-4 grid gap-4" [formGroup]="form" (ngSubmit)="submit()">
-      <!-- Importo -->
       <label class="grid gap-1">
         <span class="text-sm text-zinc-300">Importo</span>
         <input
@@ -51,7 +48,6 @@
         }
       </label>
 
-      <!-- Mesi -->
       <label class="grid gap-1">
         <span class="text-sm text-zinc-300">Mesi</span>
         <input
@@ -72,7 +68,6 @@
         }
       </label>
 
-      <!-- Causale -->
       <label class="grid gap-1">
         <span class="text-sm text-zinc-300">Causale</span>
         <textarea

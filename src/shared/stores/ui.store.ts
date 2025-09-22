@@ -9,9 +9,11 @@ export class UiStore {
   openDrawer() {
     this._drawerOpen.set(true);
   }
+
   closeDrawer() {
     this._drawerOpen.set(false);
   }
+
   toggleDrawer() {
     this._drawerOpen.update((v) => !v);
   }

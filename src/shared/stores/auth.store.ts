@@ -41,7 +41,6 @@ export class AuthStore {
     try {
       const res = await this.http.handleLogin({ username: email, password });
 
-      console.log("Login successful:", res.data);
       this.closeAll();
     } catch (e: any) {
       const msg =

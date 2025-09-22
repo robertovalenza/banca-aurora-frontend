@@ -14,6 +14,8 @@ import {
   ISendLoanAndDecisionResponse,
   ISendLoanRequest,
   ISendLoanResponse,
+  IUpdateTokenRequest,
+  IUpdateTokenResponse,
 } from "../interfaces/api";
 import {
   HttpClient,
@@ -45,73 +47,6 @@ export class HttpService {
       return this.router.navigateByUrl(url);
     }
     return Promise.resolve(false);
-  }
-  private getExpiryFromJwt(token: string): number | null {
-    try {
-      const [, payload] = token.split(".");
-      const decoded = JSON.parse(
-        atob(payload.replace(/-/g, "+").replace(/_/g, "/"))
-      );
-      return typeof decoded?.exp === "number" ? decoded.exp * 1000 : null;
-    } catch {
-      return null;
-    }
-  }
-
-  private setSession(opts: {
-    accessToken: string;
-    refreshToken?: string;
-    expiresAtMs?: number | null;
-    user?: any;
-  }) {
-    localStorage.setItem("accessToken", opts.accessToken);
-    if (opts.refreshToken)
-      localStorage.setItem("refreshToken", opts.refreshToken);
-    if (opts.expiresAtMs)
-      localStorage.setItem("tokenExpiry", String(opts.expiresAtMs));
-    if (opts.user) localStorage.setItem("user", JSON.stringify(opts.user));
-  }
-
-  async apiRequest<T>(options: ApiRequestOptions): Promise<ApiResponse<T>> {
-    const storedUrl = localStorage.getItem("url") ?? this.fallbackBaseUrl;
-    const fullUrl = storedUrl + options.endpoint;
-    let headers = new HttpHeaders({ "Content-Type": "application/json" });
-
-    if (options.hasToken) {
-      const accessToken = localStorage.getItem("accessToken") ?? "";
-      if (accessToken) {
-        const tokenType = localStorage.getItem("tokenType") || "Bearer";
-        headers = headers.set("Authorization", `${tokenType} ${accessToken}`);
-      }
-    }
-
-    // <-- NEW: costruisci HttpParams solo dai valori definiti
-    let params: HttpParams | undefined;
-    if (options.params) {
-      const p = new HttpParams({
-        fromObject: Object.entries(options.params).reduce((acc, [k, v]) => {
-          if (v !== null && v !== undefined && v !== "") acc[k] = String(v);
-          return acc;
-        }, {} as Record<string, string>),
-      });
-      params = p;
-    }
-
-    try {
-      const response = await lastValueFrom(
-        this.http.request<T>(options.method, fullUrl, {
-          body: options.body,
-          headers,
-          observe: "response",
-          withCredentials: false,
-          params, // <-- NEW
-        })
-      );
-      return { status: response.status, data: response.body as T };
-    } catch (error) {
-      console.error("errore richiesta API:", error);
-      throw error;
-    }
   }
 
   async handleLogin(creds?: {
@@ -253,12 +188,10 @@ export class HttpService {
     }
   }
 
-  // Ricava l'id cliente dagli oggetti profilo (adatta se cambia il nome campo)
   private extractCustomerId(profile: any): string | null {
     return profile?.customerId ?? profile?.id ?? null;
   }
 
-  /** Ottiene customerId da localStorage o lo scarica (senza mostrare loader) */
   private async ensureCustomerId(): Promise<string> {
     const cached = localStorage.getItem("customerId");
     if (cached) return cached;
@@ -266,15 +199,14 @@ export class HttpService {
     try {
       const res = await this.apiRequest<ICustomer>({
         method: "GET",
-        endpoint: environment.GetOwnCustomerData, // es. '/customers/me'
+        endpoint: environment.GetOwnCustomerData,
         hasToken: true,
-        _retry: true, // evita retry loops nel refresh
+        _retry: true,
       });
 
       const cid = this.extractCustomerId(res.data);
       if (cid) {
         localStorage.setItem("customerId", cid);
-        // opzionale: cache anche il profilo completo
         localStorage.setItem("user", JSON.stringify(res.data));
         return cid;
       }
@@ -293,7 +225,7 @@ export class HttpService {
 
   async getLoans(args: {
     status?: string;
-    customerId?: string | number; // ora opzionale
+    customerId?: string | number;
     page?: number;
     pageSize?: number;
     sort?: string;
@@ -358,7 +290,6 @@ export class HttpService {
       return res;
     } catch (err) {
       const e = err as HttpErrorResponse | any;
-      // NON mostro alert qui: il chiamante decide (per aprire la modale)
       return Promise.reject({
         status: e?.status ?? 0,
         data: { message: e?.message } as any,
@@ -371,7 +302,6 @@ export class HttpService {
   async createCustomer(
     body: ICreateCustomerRequest
   ): Promise<ApiResponse<ICustomer>> {
-    // validazione minima
     if (
       !body.firstName ||
       !body.lastName ||
@@ -394,7 +324,6 @@ export class HttpService {
         body,
       });
 
-      // salva subito customerId per le chiamate successive
       if (res?.data) {
         const cid = this.extractCustomerId(res.data);
         if (cid) localStorage.setItem("customerId", cid);
@@ -448,10 +377,9 @@ export class HttpService {
         purpose: body.purpose.trim(),
       };
 
-      // 1) invio richiesta prestito
       const sendRes = await this.apiRequest<ISendLoanResponse>({
         method: "POST",
-        endpoint: environment.SendLoanRequest, // es.: '/loan-applications/SendLoanApplication'
+        endpoint: environment.SendLoanRequest,
         hasToken: true,
         body: payload,
       });
@@ -464,16 +392,13 @@ export class HttpService {
         });
       }
 
-      // 2) decisione immediata con applicationId
       const decideRes = await this.getLoanDecision(appId);
 
-      // 3) ritorno combinato: dati della submission + decisione
       const combined: ISendLoanAndDecisionResponse = {
         ...sendRes.data,
         decision: decideRes.data,
       };
 
-      // status complessivo: riuso lo status della decision (o quello della POST se preferisci)
       return { status: decideRes.status, data: combined };
     } catch (err) {
       const e = err as HttpErrorResponse | any;
@@ -532,7 +457,6 @@ export class HttpService {
       });
     }
 
-    // niente loader qui: lo gestisce sendLoanRequest per l’intero flusso
     try {
       const res = await this.apiRequest<ILoanDecisionResponse>({
         method: "POST",
@@ -577,11 +501,9 @@ export class HttpService {
         body: { incomeMonthly },
       });
 
-      // aggiorna cache utente locale se presente
       if (res?.data) {
         localStorage.setItem("user", JSON.stringify(res.data));
       } else {
-        // se la risposta non ritorna il profilo, aggiorna comunque il valore nel "user" in LS se esiste
         const userRaw = localStorage.getItem("user");
         if (userRaw) {
           try {
@@ -610,6 +532,156 @@ export class HttpService {
     }
   }
 
+  private refreshingPromise: Promise<boolean> | null = null;
+
+  private getExpiryFromJwt(token: string): number | null {
+    try {
+      const [, payload] = token.split(".");
+      const decoded = JSON.parse(
+        atob(payload.replace(/-/g, "+").replace(/_/g, "/"))
+      );
+      return typeof decoded?.exp === "number" ? decoded.exp * 1000 : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private setSession(opts: {
+    accessToken: string;
+    refreshToken?: string;
+    expiresAtMs?: number | null;
+    tokenType?: string;
+  }) {
+    localStorage.setItem("accessToken", opts.accessToken);
+    if (opts.refreshToken !== undefined) {
+      if (opts.refreshToken)
+        localStorage.setItem("refreshToken", opts.refreshToken);
+      else localStorage.removeItem("refreshToken");
+    }
+    if (opts.expiresAtMs !== undefined) {
+      if (opts.expiresAtMs)
+        localStorage.setItem("tokenExpiry", String(opts.expiresAtMs));
+      else localStorage.removeItem("tokenExpiry");
+    }
+    if (opts.tokenType) localStorage.setItem("tokenType", opts.tokenType);
+  }
+
+  private async refreshViaBackend(): Promise<boolean> {
+    const refreshToken = localStorage.getItem("refreshToken") ?? "";
+    if (!refreshToken) return false;
+
+    if (this.refreshingPromise) return this.refreshingPromise;
+
+    this.refreshingPromise = (async () => {
+      try {
+        const res = await this.apiRequest<IUpdateTokenResponse>({
+          method: "POST",
+          endpoint: environment.RefreshToken,
+          hasToken: false,
+          body: { refreshToken } as IUpdateTokenRequest,
+          _retry: true,
+        });
+
+        const at = res?.data?.access_token;
+        if (!at) return false;
+
+        const expFromJwtMs = this.getExpiryFromJwt(at);
+        const expiresAtMs =
+          expFromJwtMs ??
+          (typeof res.data.expires_in === "number"
+            ? Date.now() + res.data.expires_in * 1000
+            : null);
+
+        this.setSession({
+          accessToken: at,
+          refreshToken: res.data.refresh_token,
+          expiresAtMs,
+          tokenType: res.data.token_type || "Bearer",
+        });
+
+        return true;
+      } catch (e) {
+        return false;
+      } finally {
+        this.refreshingPromise = null;
+      }
+    })();
+
+    return this.refreshingPromise;
+  }
+
+  private async silentRelogin(): Promise<boolean> {
+    const username = localStorage.getItem("username") ?? "";
+    const password = localStorage.getItem("password") ?? "";
+    if (!username || !password) return false;
+    try {
+      const res = await this.handleLogin({ username, password });
+      return !!res?.data?.access_token;
+    } catch {
+      return false;
+    }
+  }
+
+  async apiRequest<T>(options: ApiRequestOptions): Promise<ApiResponse<T>> {
+    const storedUrl = localStorage.getItem("url") ?? this.fallbackBaseUrl;
+    const fullUrl = storedUrl + options.endpoint;
+
+    let headers = new HttpHeaders({ "Content-Type": "application/json" });
+    if (options.hasToken) {
+      const accessToken = localStorage.getItem("accessToken") ?? "";
+      if (accessToken) {
+        const tokenType = localStorage.getItem("tokenType") || "Bearer";
+        headers = headers.set("Authorization", `${tokenType} ${accessToken}`);
+      }
+    }
+
+    let params: HttpParams | undefined;
+    if (options.params) {
+      params = new HttpParams({
+        fromObject: Object.entries(options.params).reduce((acc, [k, v]) => {
+          if (v !== null && v !== undefined && v !== "") acc[k] = String(v);
+          return acc;
+        }, {} as Record<string, string>),
+      });
+    }
+
+    try {
+      const resp = await lastValueFrom(
+        this.http.request<T>(options.method, fullUrl, {
+          body: options.body,
+          headers,
+          observe: "response",
+          withCredentials: false,
+          params,
+        })
+      );
+      return { status: resp.status, data: resp.body as T };
+    } catch (err) {
+      const e = err as HttpErrorResponse;
+      const is401 = e?.status === 401 || e?.status === 403;
+      const alreadyRetried = options._retry === true;
+
+      const isAuthPath =
+        /\/(login|logout|refresh|update-token)$/i.test(options.endpoint) ||
+        /\/protocol\/openid-connect\/token$/i.test(fullUrl);
+
+      if (is401 && !alreadyRetried && !isAuthPath && options.hasToken) {
+        let ok = await this.refreshViaBackend();
+
+        if (!ok) ok = await this.silentRelogin();
+
+        if (ok) {
+          return this.apiRequest<T>({ ...options, _retry: true });
+        }
+
+        this.clearSession?.();
+        await this.navigateTo("/unauthorized");
+      }
+
+      throw err;
+    }
+  }
+
   private clearSession() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
@@ -627,25 +699,21 @@ export class HttpService {
     this.loader.showLoading("Uscita…");
 
     try {
-      // prova a notificare il backend solo se abbiamo un refresh token
       let apiRes: ApiResponse<ILogoutResponse> | null = null;
       if (refreshToken) {
         apiRes = await this.apiRequest<ILogoutResponse>({
           method: "POST",
           endpoint: environment.Logout,
-          hasToken: false, // di solito la logout API non richiede access token
+          hasToken: false,
           body: { refreshToken },
         });
       }
 
-      // sempre: pulizia sessione e redirect
       this.clearSession();
       await this.navigateTo("/");
 
-      // se non abbiamo chiamato l'API perché mancava il token, ritorno uno shape coerente
       return apiRes ?? { status: 200, data: { message: "Logged out locally" } };
     } catch (err) {
-      // anche se l’API fallisce, pulisco comunque e navigo via
       console.error("Logout failed:", err);
       this.clearSession();
       await this.navigateTo("/");
@@ -656,9 +724,6 @@ export class HttpService {
         e?.error?.message ||
         e?.message ||
         (status === 0 ? "Impossibile contattare il server" : "Logout fallito");
-
-      // opzionale: puoi evitare l’alert a logout fallito per non “spaventare” l’utente
-      // this.loader.presentAlert('Errore', message);
 
       return Promise.reject({ status, data: { message } as any });
     } finally {

@@ -31,17 +31,14 @@ export class DashboardComponent {
 
   async ngOnInit() {
     try {
-      // 1 sola chiamata, così se fa 404 lo intercetti qui
       const res = await this.httpService.getOwnCustomerData();
       if (res.status === 200) {
         await this.loadLoans();
       }
     } catch (e: any) {
       if ((e?.status ?? 0) === 404 || !localStorage.getItem("customerId")) {
-        // nessun profilo ⇒ apri modale creazione
         this.createCustomerOpen.set(true);
       } else {
-        // opzionale: gestisci altri errori (rete, 500, ecc.)
         console.error("getOwnCustomerData failed:", e);
       }
     }
@@ -67,7 +64,7 @@ export class DashboardComponent {
 
   async onCustomerCreated() {
     this.createCustomerOpen.set(false);
-    await this.loadLoans(); // ora che c'è il profilo, carica le loans
+    await this.loadLoans();
   }
 
   openIncomeModal() {

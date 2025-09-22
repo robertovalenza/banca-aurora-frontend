@@ -34,17 +34,16 @@ export class CreateCustomerModalComponent {
   private http = inject(HttpService);
   submitting = signal(false);
 
-  form!: FormGroup; // 👈 dichiarata ma non inizializzata qui
+  form!: FormGroup;
 
   private cfPattern = /^[A-Z]{6}\d{2}[A-EHLMPRST]\d{2}[A-Z]\d{3}[A-Z]$/;
   private fiscalCodeValidator: ValidatorFn = (control: AbstractControl) => {
     const raw = (control.value ?? "").toString().trim().toUpperCase();
-    if (!raw) return null; // "required" separato
+    if (!raw) return null;
     return this.cfPattern.test(raw) ? null : { cfInvalid: true };
   };
 
   constructor() {
-    // 👇 Inizializzo il form nel costruttore, dopo che fb è disponibile
     this.form = this.fb.nonNullable.group({
       firstName: ["", [Validators.required]],
       lastName: ["", [Validators.required]],
@@ -53,7 +52,6 @@ export class CreateCustomerModalComponent {
     });
   }
 
-  // Precompila Nome/Cognome quando si apre
   private _prefillEff = effect(() => {
     if (this.open && this.form) {
       const fn = (localStorage.getItem("firstName") || "").trim();
@@ -98,7 +96,6 @@ export class CreateCustomerModalComponent {
     }
   }
 
-  // getter comodi (se li usi nel template)
   get fiscalCodeCtrl() {
     return this.form.get("fiscalCode");
   }
