@@ -8,6 +8,7 @@ import {
   ILoansPage,
   ILoginRequest,
   ILoginResponse,
+  ILogoutResponse,
   IRegisterRequest,
   IRegisterResponse,
   ISendLoanAndDecisionResponse,
@@ -603,6 +604,62 @@ export class HttpService {
           ? "Impossibile contattare il server"
           : "Aggiornamento entrate fallito");
       this.loader.presentAlert("Errore", message);
+      return Promise.reject({ status, data: { message } as any });
+    } finally {
+      this.loader.hideLoading();
+    }
+  }
+
+  private clearSession() {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("tokenType");
+    localStorage.removeItem("tokenExpiry");
+    localStorage.removeItem("user");
+    localStorage.removeItem("customerId");
+    localStorage.removeItem("firstName");
+    localStorage.removeItem("lastName");
+  }
+
+  async logout(): Promise<ApiResponse<ILogoutResponse>> {
+    const refreshToken = localStorage.getItem("refreshToken") ?? "";
+
+    this.loader.showLoading("Uscita…");
+
+    try {
+      // prova a notificare il backend solo se abbiamo un refresh token
+      let apiRes: ApiResponse<ILogoutResponse> | null = null;
+      if (refreshToken) {
+        apiRes = await this.apiRequest<ILogoutResponse>({
+          method: "POST",
+          endpoint: environment.Logout,
+          hasToken: false, // di solito la logout API non richiede access token
+          body: { refreshToken },
+        });
+      }
+
+      // sempre: pulizia sessione e redirect
+      this.clearSession();
+      await this.navigateTo("/");
+
+      // se non abbiamo chiamato l'API perché mancava il token, ritorno uno shape coerente
+      return apiRes ?? { status: 200, data: { message: "Logged out locally" } };
+    } catch (err) {
+      // anche se l’API fallisce, pulisco comunque e navigo via
+      console.error("Logout failed:", err);
+      this.clearSession();
+      await this.navigateTo("/");
+
+      const e = err as any;
+      const status = e?.status ?? 0;
+      const message =
+        e?.error?.message ||
+        e?.message ||
+        (status === 0 ? "Impossibile contattare il server" : "Logout fallito");
+
+      // opzionale: puoi evitare l’alert a logout fallito per non “spaventare” l’utente
+      // this.loader.presentAlert('Errore', message);
+
       return Promise.reject({ status, data: { message } as any });
     } finally {
       this.loader.hideLoading();

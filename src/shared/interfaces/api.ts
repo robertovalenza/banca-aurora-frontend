@@ -127,3 +127,10 @@ export interface ILoanDecisionResponse {
 export interface ISendLoanAndDecisionResponse extends ISendLoanResponse {
   decision: ILoanDecisionResponse;
 }
+
+export interface ILogoutRequest {
+  refreshToken: string;
+}
+export interface ILogoutResponse {
+  message?: string;
+}

@@ -5,6 +5,7 @@ import { LoanRequestModalComponent } from "../loan-request-modal/loan-request-mo
 import { GlobalService } from "../../services/global.service";
 import { CreateCustomerModalComponent } from "../create-customer-modal/create-customer-modal.component";
 import { UpdateIncomeModalComponent } from "../update-income-modal/update-income-modal.component";
+import { UnauthorizedComponent } from "../unauthorized/unauthorized.component";
 
 @Component({
   selector: "app-dashboard",
@@ -13,6 +14,7 @@ import { UpdateIncomeModalComponent } from "../update-income-modal/update-income
     LoanRequestModalComponent,
     CreateCustomerModalComponent,
     UpdateIncomeModalComponent,
+    UnauthorizedComponent,
   ],
   templateUrl: "./dashboard.component.html",
   styleUrl: "./dashboard.component.scss",
@@ -62,6 +64,7 @@ export class DashboardComponent {
   onCreateClosed() {
     this.createCustomerOpen.set(false);
   }
+
   async onCustomerCreated() {
     this.createCustomerOpen.set(false);
     await this.loadLoans(); // ora che c'è il profilo, carica le loans
@@ -75,7 +78,9 @@ export class DashboardComponent {
   }
   onIncomeUpdated(_value: number) {
     this.incomeOpen.set(false);
-    // Se vuoi, ricarica le loans o aggiornare UI che dipende dal reddito
-    // this.loadLoans();
+  }
+
+  onLogout() {
+    this.httpService.logout().catch(() => {});
   }
 }

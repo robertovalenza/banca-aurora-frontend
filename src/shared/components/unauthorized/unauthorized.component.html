@@ -1,0 +1,19 @@
+<div class="min-h-dvh grid place-items-center bg-zinc-950 text-zinc-100 px-6">
+  <div class="max-w-md w-full text-center">
+    <h1 class="text-3xl font-bold">
+      Accesso <span class="text-red-500">non autorizzato</span>
+    </h1>
+    <p class="mt-3 text-zinc-300">
+      Non hai i permessi per accedere a questa pagina. Effettua l’accesso e
+      riprova.
+    </p>
+    <div class="mt-6 flex items-center justify-center gap-3">
+      <button
+        (click)="navigateToHome()"
+        class="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm hover:bg-zinc-800"
+      >
+        Torna alla home
+      </button>
+    </div>
+  </div>
+</div>
