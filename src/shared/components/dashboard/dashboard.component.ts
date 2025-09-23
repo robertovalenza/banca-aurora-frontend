@@ -5,7 +5,6 @@ import { LoanRequestModalComponent } from "../loan-request-modal/loan-request-mo
 import { GlobalService } from "../../services/global.service";
 import { CreateCustomerModalComponent } from "../create-customer-modal/create-customer-modal.component";
 import { UpdateIncomeModalComponent } from "../update-income-modal/update-income-modal.component";
-import { UnauthorizedComponent } from "../unauthorized/unauthorized.component";
 
 @Component({
   selector: "app-dashboard",
@@ -14,7 +13,6 @@ import { UnauthorizedComponent } from "../unauthorized/unauthorized.component";
     LoanRequestModalComponent,
     CreateCustomerModalComponent,
     UpdateIncomeModalComponent,
-    UnauthorizedComponent,
   ],
   templateUrl: "./dashboard.component.html",
   styleUrl: "./dashboard.component.scss",
