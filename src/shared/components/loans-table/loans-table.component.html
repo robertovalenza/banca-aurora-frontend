@@ -31,18 +31,18 @@
           class="inline-flex items-center rounded-full px-2 py-0.5 text-xs border"
           [ngClass]="{
             'bg-emerald-900/40 text-emerald-300 border-emerald-700/50':
-              loan.status === 'APPROVED',
+              loan.status === 'APPROVATO',
             'bg-amber-900/40 text-amber-300 border-amber-700/50':
               loan.status === 'PENDING',
             'bg-orange-900/40 text-orange-300 border-orange-700/50':
-              loan.status === 'SUBMITTED',
+              loan.status === 'INVIATO',
             'bg-red-900/40 text-red-300 border-red-700/50':
-              loan.status === 'DECLINED' || loan.status === 'REJECTED',
+              loan.status === 'RIFIUTATO' || loan.status === 'REJECTED',
             'bg-zinc-800 text-zinc-300 border-zinc-700/50': ![
-              'APPROVED',
+              'APPROVATO',
               'PENDING',
-              'SUBMITTED',
-              'DECLINED',
+              'INVIATO',
+              'RIFIUTATO',
               'REJECTED'
             ].includes(loan.status ?? '')
           }"
@@ -85,18 +85,18 @@
             class="inline-flex items-center rounded-full px-2 py-0.5 text-xs border"
             [ngClass]="{
               'bg-emerald-900/40 text-emerald-300 border-emerald-700/50':
-                loan.status === 'APPROVED',
+                loan.status === 'APPROVATO',
               'bg-amber-900/40 text-amber-300 border-amber-700/50':
                 loan.status === 'PENDING',
               'bg-orange-900/40 text-orange-300 border-orange-700/50':
-                loan.status === 'SUBMITTED',
+                loan.status === 'INVIATO',
               'bg-red-900/40 text-red-300 border-red-700/50':
-                loan.status === 'DECLINED' || loan.status === 'REJECTED',
+                loan.status === 'RIFIUTATO' || loan.status === 'REJECTED',
               'bg-zinc-800 text-zinc-300 border-zinc-700/50': ![
-                'APPROVED',
+                'APPROVATO',
                 'PENDING',
-                'SUBMITTED',
-                'DECLINED',
+                'INVIATO',
+                'RIFIUTATO',
                 'REJECTED'
               ].includes(loan.status ?? '')
             }"

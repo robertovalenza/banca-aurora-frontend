@@ -50,7 +50,7 @@ export interface ILoan {
   amount: number;
   months: number;
   purpose: string;
-  status: "APPROVED" | "PENDING" | "REJECTED" | string;
+  status: "APPROVATO" | "PENDING" | "REJECTED" | string;
   score: number;
   apr: number;
   monthlyPayment: number;
@@ -95,10 +95,10 @@ export interface ISendLoanRequest {
 export interface ISendLoanResponse {
   applicationId?: string;
   status?:
-    | "SUBMITTED"
+    | "INVIATO"
     | "PENDING"
-    | "APPROVED"
-    | "DECLINED"
+    | "APPROVATO"
+    | "RIFIUTATO"
     | "REJECTED"
     | string;
   [k: string]: any;
@@ -113,11 +113,11 @@ export interface ICreateCustomerRequest {
 
 export interface ILoanDecisionResponse {
   status:
-    | "APPROVED"
+    | "APPROVATO"
     | "PENDING"
-    | "DECLINED"
+    | "RIFIUTATO"
     | "REJECTED"
-    | "SUBMITTED"
+    | "INVIATO"
     | string;
   apr: number;
   monthlyPayment: number;
